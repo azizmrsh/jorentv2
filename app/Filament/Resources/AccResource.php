@@ -13,8 +13,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
-use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
-use Ysfkaya\FilamentPhoneInput\Tables\PhoneColumn;
 
 
 class AccResource extends Resource
@@ -85,18 +83,40 @@ class AccResource extends Resource
                     ]),
                 Forms\Components\TextInput::make('password')->label(__('general.Password'))->password()->maxLength(255)->required()->dehydrated(fn ($state) => filled($state))->visible(fn (string $context) => in_array($context, ['create', 'edit'])),
                 Forms\Components\TextInput::make('confirm_password')->label(__('general.Confirm Password'))->password()->maxLength(255)->required()->dehydrated(fn ($state) => filled($state))->visible(fn (string $context) => in_array($context, ['create', 'edit']))->same('password'),
-                ///////////////////////////////////////////
-
-                PhoneInput::make('phone')
+                
+                Forms\Components\TextInput::make('phone')
                     ->label(__('general.Phone'))
+                    ->tel()
                     ->required()
-                    ->defaultCountry('JO')
-                    ->preferredCountries(['JO', 'SA', 'AE', 'EG', 'LB', 'SY', 'IQ', 'KW', 'QA', 'BH', 'OM'])
-                    ->showSelectedDialCode()
-                    ->validateFor()
-                    ->displayNumberFormat('NATIONAL'),
-
-                //////////////////////////////////////////////////////////    
+                    ->placeholder('+962 77 123 4567')
+                    ->helperText(__('general.Please include country code (e.g., +962 77 123 4567)'))
+                    ->rules([
+                        'regex:/^\+[1-9]\d{1,14}$/'
+                    ])
+                    ->validationMessages([
+                        'regex' => __('general.Please enter a valid international phone number with country code'),
+                    ])
+                    ->live()
+                    ->afterStateUpdated(function ($state, $component) {
+                        if ($state) {
+                            // تنظيف الرقم من المسافات والرموز غير المرغوبة
+                            $cleanNumber = preg_replace('/[^\+\d]/', '', $state);
+                            
+                            // إضافة رمز الأردن تلقائياً إذا لم يبدأ بـ +
+                            if (!str_starts_with($cleanNumber, '+')) {
+                                $cleanNumber = '+962' . $cleanNumber;
+                            }
+                            
+                            // تنسيق الرقم الأردني
+                            if (str_starts_with($cleanNumber, '+962')) {
+                                $number = substr($cleanNumber, 4);
+                                if (strlen($number) === 9) {
+                                    $formatted = '+962 ' . substr($number, 0, 2) . ' ' . substr($number, 2, 3) . ' ' . substr($number, 5);
+                                    $component->state($formatted);
+                                }
+                            }
+                        }
+                    }),
                 
                 Forms\Components\TextInput::make('address')->label(__('general.Address'))->maxLength(255),
             ]),
@@ -139,7 +159,7 @@ class AccResource extends Resource
                 Tables\Columns\TextColumn::make('midname')->label(__('general.Middle Name'))->searchable()->sortable()->toggleable(),
                 Tables\Columns\TextColumn::make('lastname')->label(__('general.Last Name'))->searchable()->sortable()->toggleable(),
                 Tables\Columns\TextColumn::make('email')->label(__('general.Email'))->searchable()->sortable()->toggleable(),
-                PhoneColumn::make('phone')->label(__('general.Phone'))->searchable()->sortable()->toggleable(),
+                Tables\Columns\TextColumn::make('phone')->label(__('general.Phone'))->searchable()->sortable()->toggleable(),
                 Tables\Columns\TextColumn::make('address')->label(__('general.Address'))->searchable()->sortable()->toggleable(),
                 Tables\Columns\TextColumn::make('birth_date')->label(__('general.Birth Date'))->searchable()->sortable()->toggleable(),
                 Tables\Columns\TextColumn::make('status')->label(__('general.Status'))->searchable()->sortable()->toggleable(),
