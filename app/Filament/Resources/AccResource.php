@@ -85,40 +85,50 @@ class AccResource extends Resource
                 Forms\Components\TextInput::make('confirm_password')->label(__('general.Confirm Password'))->password()->maxLength(255)->required()->dehydrated(fn ($state) => filled($state))->visible(fn (string $context) => in_array($context, ['create', 'edit']))->same('password'),
                 //Forms\Components\TextInput::make('phone')->label(__('general.Phone'))->maxLength(255),
                 /////
-                Forms\Components\Grid::make(2)->schema([
-                    Forms\Components\Select::make('country_code')
-                        ->label(__('general.Country Code'))
-                        ->options([
-                            '+962' => '🇯🇴 Jordan (+962)',
-                            '+966' => '🇸🇦 Saudi Arabia (+966)',
-                            '+971' => '🇦🇪 UAE (+971)',
-                            '+20' => '🇪🇬 Egypt (+20)',
-                            '+965' => '🇰🇼 Kuwait (+965)',
-                            '+973' => '🇧🇭 Bahrain (+973)',
-                            '+974' => '🇶🇦 Qatar (+974)',
-                            '+968' => '🇴🇲 Oman (+968)',
-                            '+961' => '🇱🇧 Lebanon (+961)',
-                            '+963' => '🇸🇾 Syria (+963)',
-                            '+964' => '🇮🇶 Iraq (+964)',
-                            '+1' => '🇺🇸 USA (+1)',
-                            '+44' => '🇬🇧 UK (+44)',
-                        ])
-                        ->default('+962')
-                        ->searchable()
-                        ->required(),
-                    
-                    Forms\Components\TextInput::make('phone_number')
-                        ->label(__('general.Phone Number'))
-                        ->tel()
-                        ->required()
-                        ->placeholder('7XXXXXXXX')
-                        ->rules([
-                            'regex:/^[0-9]{8,15}$/'
-                        ])
-                        ->validationMessages([
-                            'regex' => __('general.Please enter a valid phone number'),
-                        ]),
-                ]),
+// ...existing code...
+Forms\Components\TextInput::make('phone')
+    ->label(__('general.Phone'))
+    ->tel()
+    ->required()
+    ->placeholder('+962 77 123 4567')
+    ->prefixIcon('heroicon-o-phone')
+    ->helperText(__('general.Enter full phone number with country code'))
+    ->live()
+    ->afterStateUpdated(function ($state, $component) {
+        if ($state) {
+            // تنظيف الرقم من المسافات والرموز غير المرغوبة
+            $cleanNumber = preg_replace('/[^\+\d]/', '', $state);
+            
+            // إضافة رمز الأردن تلقائياً إذا لم يبدأ بـ +
+            if (!str_starts_with($cleanNumber, '+')) {
+                $cleanNumber = '+962' . $cleanNumber;
+            }
+            
+            // تنسيق الرقم الأردني
+            if (str_starts_with($cleanNumber, '+962')) {
+                $number = substr($cleanNumber, 4);
+                if (strlen($number) === 9) {
+                    $formatted = '+962 ' . substr($number, 0, 2) . ' ' . substr($number, 2, 3) . ' ' . substr($number, 5);
+                    $component->state($formatted);
+                }
+            }
+        }
+    })
+    ->rules([
+        'regex:/^\+[1-9]\d{1,14}$/',
+        function ($attribute, $value, $fail) {
+            // التحقق من صحة الأرقام الأردنية
+            if (str_starts_with($value, '+962')) {
+                $number = preg_replace('/[^\d]/', '', substr($value, 4));
+                if (strlen($number) !== 9 || !in_array(substr($number, 0, 2), ['77', '78', '79', '76'])) {
+                    $fail(__('general.Please enter a valid Jordanian phone number'));
+                }
+            }
+        }
+    ])
+    ->validationMessages([
+        'regex' => __('general.Please enter a valid international phone number'),
+    ]),
 
                 /////
                 Forms\Components\TextInput::make('address')->label(__('general.Address'))->maxLength(255),
