@@ -47,8 +47,15 @@ class AccResource extends Resource
                 Forms\Components\TextInput::make('firstname')->label(__('general.First Name'))->required()->maxLength(255),
                 Forms\Components\TextInput::make('midname')->label(__('general.Middle Name'))->maxLength(255),
                 Forms\Components\TextInput::make('lastname')->label(__('general.Last Name'))->maxLength(255),
-                Forms\Components\DatePicker::make('birth_date')->label(__('general.Birth Date')),
-                Forms\Components\TextInput::make('nationality')->label(__('general.Nationality'))->maxLength(255),
+                Forms\Components\DatePicker::make('birth_date')
+                    ->label(__('general.Birth Date'))
+                    ->rules([
+                        'before:' . now()->subYears(18)->format('Y-m-d')
+                    ])
+                    ->validationMessages([
+                        'before' => __('general.Age must be at least 18 years'),
+                    ]),
+                    Forms\Components\TextInput::make('nationality')->label(__('general.Nationality'))->maxLength(255),
             ]),
             Forms\Components\Fieldset::make(__('general.Contact Information'))->schema([
                 Forms\Components\TextInput::make('email')
