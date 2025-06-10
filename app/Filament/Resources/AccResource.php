@@ -85,7 +85,8 @@ class AccResource extends Resource
                     ]),
                 Forms\Components\TextInput::make('password')->label(__('general.Password'))->password()->maxLength(255)->required()->dehydrated(fn ($state) => filled($state))->visible(fn (string $context) => in_array($context, ['create', 'edit'])),
                 Forms\Components\TextInput::make('confirm_password')->label(__('general.Confirm Password'))->password()->maxLength(255)->required()->dehydrated(fn ($state) => filled($state))->visible(fn (string $context) => in_array($context, ['create', 'edit']))->same('password'),
-                
+                ///////////////////////////////////////////
+
                 PhoneInput::make('phone')
                     ->label(__('general.Phone'))
                     ->required()
@@ -94,6 +95,8 @@ class AccResource extends Resource
                     ->showSelectedDialCode()
                     ->validateFor()
                     ->displayNumberFormat('NATIONAL'),
+
+                //////////////////////////////////////////////////////////    
                 
                 Forms\Components\TextInput::make('address')->label(__('general.Address'))->maxLength(255),
             ]),
