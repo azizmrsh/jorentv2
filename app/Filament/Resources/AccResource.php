@@ -69,6 +69,7 @@ class AccResource extends Resource
                     Forms\Components\TextInput::make('nationality')->label(__('general.Nationality'))->maxLength(255),
             ]),
             Forms\Components\Fieldset::make(__('general.Contact Information'))->schema([
+
                 Forms\Components\TextInput::make('email')
                     ->label(__('general.Email'))
                     ->email()
@@ -80,12 +81,50 @@ class AccResource extends Resource
                         'email' => __('general.Please enter a valid email address'),
                         'required' => __('general.The email field is required'),
                     ]),
-                Forms\Components\TextInput::make('phone')->label(__('general.Phone'))->maxLength(255),
+                Forms\Components\TextInput::make('password')->label(__('general.Password'))->password()->maxLength(255)->required()->dehydrated(fn ($state) => filled($state))->visible(fn (string $context) => in_array($context, ['create', 'edit'])),
+                Forms\Components\TextInput::make('confirm_password')->label(__('general.Confirm Password'))->password()->maxLength(255)->required()->dehydrated(fn ($state) => filled($state))->visible(fn (string $context) => in_array($context, ['create', 'edit']))->same('password'),
+                //Forms\Components\TextInput::make('phone')->label(__('general.Phone'))->maxLength(255),
+                /////
+                Forms\Components\Grid::make(2)->schema([
+                    Forms\Components\Select::make('country_code')
+                        ->label(__('general.Country Code'))
+                        ->options([
+                            '+962' => '🇯🇴 Jordan (+962)',
+                            '+966' => '🇸🇦 Saudi Arabia (+966)',
+                            '+971' => '🇦🇪 UAE (+971)',
+                            '+20' => '🇪🇬 Egypt (+20)',
+                            '+965' => '🇰🇼 Kuwait (+965)',
+                            '+973' => '🇧🇭 Bahrain (+973)',
+                            '+974' => '🇶🇦 Qatar (+974)',
+                            '+968' => '🇴🇲 Oman (+968)',
+                            '+961' => '🇱🇧 Lebanon (+961)',
+                            '+963' => '🇸🇾 Syria (+963)',
+                            '+964' => '🇮🇶 Iraq (+964)',
+                            '+1' => '🇺🇸 USA (+1)',
+                            '+44' => '🇬🇧 UK (+44)',
+                        ])
+                        ->default('+962')
+                        ->searchable()
+                        ->required(),
+                    
+                    Forms\Components\TextInput::make('phone_number')
+                        ->label(__('general.Phone Number'))
+                        ->tel()
+                        ->required()
+                        ->placeholder('7XXXXXXXX')
+                        ->rules([
+                            'regex:/^[0-9]{8,15}$/'
+                        ])
+                        ->validationMessages([
+                            'regex' => __('general.Please enter a valid phone number'),
+                        ]),
+                ]),
+
+                /////
                 Forms\Components\TextInput::make('address')->label(__('general.Address'))->maxLength(255),
             ]),
             Forms\Components\Fieldset::make(__('general.Profile Information'))->schema([
                 self::profilePhotoUpload(),
-                Forms\Components\TextInput::make('password')->label(__('general.Password'))->password()->maxLength(255)->required()->dehydrated(fn ($state) => filled($state))->visible(fn (string $context) => in_array($context, ['create', 'edit'])),
                 Forms\Components\TextInput::make('status')->label(__('general.Status'))->required()->maxLength(255)->default('active'),
             ]),
             Forms\Components\Fieldset::make(__('general.Document Information'))->schema([
