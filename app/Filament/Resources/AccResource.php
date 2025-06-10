@@ -83,7 +83,7 @@ class AccResource extends Resource
                     ]),
                 Forms\Components\TextInput::make('password')->label(__('general.Password'))->password()->maxLength(255)->required()->dehydrated(fn ($state) => filled($state))->visible(fn (string $context) => in_array($context, ['create', 'edit'])),
                 Forms\Components\TextInput::make('confirm_password')->label(__('general.Confirm Password'))->password()->maxLength(255)->required()->dehydrated(fn ($state) => filled($state))->visible(fn (string $context) => in_array($context, ['create', 'edit']))->same('password'),
-                
+                /*
                 Forms\Components\TextInput::make('phone')
                     ->label(__('general.Phone'))
                     ->tel()
@@ -117,7 +117,7 @@ class AccResource extends Resource
                             }
                         }
                     }),
-                
+             */   
                 Forms\Components\TextInput::make('address')->label(__('general.Address'))->maxLength(255),
             ]),
             Forms\Components\Fieldset::make(__('general.Profile Information'))->schema([
