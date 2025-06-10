@@ -51,10 +51,20 @@ class AccResource extends Resource
                 
                 Forms\Components\DatePicker::make('birth_date')
                     ->label(__('general.Birth Date'))
+                    ->maxDate(now()->subYears(18))
                     ->before(now()->subYears(18))
+                    ->live()
+                    ->afterStateUpdated(function ($state, $component) {
+                        if ($state && \Carbon\Carbon::parse($state)->age < 18) {
+                            $component->state(null);
+                        }
+                    })
                     ->validationMessages([
                         'before' => __('general.Age must be at least 18 years'),
-                    ]),
+                        'max_date' => __('general.Age must be at least 18 years'),
+                    ])
+                    ->helperText(__('general.You must be at least 18 years old'))
+                    ->placeholder(__('general.Select birth date')),
             
                     Forms\Components\TextInput::make('nationality')->label(__('general.Nationality'))->maxLength(255),
             ]),
