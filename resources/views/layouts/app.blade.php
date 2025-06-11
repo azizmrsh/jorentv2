@@ -145,10 +145,6 @@
                                 <iconify-icon icon="solar:settings-bold" class="me-2"></iconify-icon>
                                 Admin Login
                             </a></li>
-                            <li><a class="dropdown-item" href="/tenant">
-                                <iconify-icon icon="solar:user-bold" class="me-2"></iconify-icon>
-                                Tenant Login
-                            </a></li>
                         </ul>
                     </li>
                 </ul>

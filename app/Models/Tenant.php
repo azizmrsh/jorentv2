@@ -6,24 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough; // إضافة هذا
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\TenantVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Models\Contracts\HasName;
 
 
-class Tenant extends Authenticatable implements MustVerifyEmail, FilamentUser, HasName
+class Tenant extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, HasRoles;
-
-    /**
-     * The guard name used by spatie/laravel-permission.
-     */
-    protected string $guard_name = 'web';
+    use HasFactory, Notifiable;
 
     protected $fillable = [
         'firstname',
@@ -149,29 +141,5 @@ class Tenant extends Authenticatable implements MustVerifyEmail, FilamentUser, H
     public function getKey()
     {
         return $this->getAttribute($this->getKeyName());
-    }
-
-    /**
-     * Get the name for Filament display.
-     */
-    public function getFilamentName(): string
-    {
-        return $this->getFullNameAttribute();
-    }
-
-    /**
-     * Check if tenant can access Filament.
-     */
-    public function canAccessFilament(): bool
-    {
-        return $this->status === 'active';
-    }
-
-    /**
-     * Check if tenant can access specific panel.
-     */
-    public function canAccessPanel(\Filament\Panel $panel): bool
-    {
-        return $this->status === 'active' && $panel->getId() === 'tenant';
     }
 }

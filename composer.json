@@ -22,7 +22,6 @@
         "mpdf/mpdf": "^8.2",
         "propaganistas/laravel-phone": "^5.3",
         "saade/filament-autograph": "^3.2",
-        "spatie/laravel-permission": "*",
         "ysfkaya/filament-phone-input": "3.1"
     },
     "require-dev": {
