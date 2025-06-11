@@ -135,11 +135,21 @@
                     </li>
                 </ul>
                 <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <iconify-icon icon="solar:login-3-bold" class="me-1"></iconify-icon>
                             Login
                         </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/admin">
+                                <iconify-icon icon="solar:settings-bold" class="me-2"></iconify-icon>
+                                Admin Login
+                            </a></li>
+                            <li><a class="dropdown-item" href="/tenant">
+                                <iconify-icon icon="solar:user-bold" class="me-2"></iconify-icon>
+                                Tenant Login
+                            </a></li>
+                        </ul>
                     </li>
                 </ul>
             </div>

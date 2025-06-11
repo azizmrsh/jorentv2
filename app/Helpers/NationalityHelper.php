@@ -264,4 +264,16 @@ class NationalityHelper
     {
         return 'jordanian';
     }
+
+    /**
+     * Get nationality label by key
+     * 
+     * @param string $key
+     * @return string
+     */
+    public static function getNationalityLabel(string $key): string
+    {
+        $nationalities = self::getAllNationalities();
+        return $nationalities[$key] ?? ucfirst($key);
+    }
 }

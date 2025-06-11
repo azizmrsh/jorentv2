@@ -1,0 +1,29 @@
+use App\Models\Tenant;
+use Illuminate\Support\Facades\Hash;
+
+$tenant = Tenant::updateOrCreate(
+    ['email' => 'tenant@test.com'],
+    [
+        'firstname' => 'أحمد',
+        'midname' => 'محمد', 
+        'lastname' => 'العلي',
+        'email' => 'tenant@test.com',
+        'password' => Hash::make('password'),
+        'phone' => '+962791234567',
+        'address' => 'عمان، الأردن',
+        'birth_date' => '1990-01-01',
+        'status' => 'active',
+        'document_type' => 'id',
+        'document_number' => '1234567890',
+        'nationality' => 'أردني',
+        'hired_date' => now(),
+        'hired_by' => 'نظام التجربة',
+        'email_verified_at' => now(),
+    ]
+);
+
+echo "✅ مستأجر تجريبي تم إنشاؤه/تحديثه!\n";
+echo "الإيميل: tenant@test.com\n";
+echo "الباسورد: password\n";
+echo "الاسم: " . $tenant->getFilamentName() . "\n";
+echo "يمكن الدخول: " . ($tenant->canAccessFilament() ? 'نعم' : 'لا') . "\n";

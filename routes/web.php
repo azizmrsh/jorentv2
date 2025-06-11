@@ -19,6 +19,14 @@ Route::post('/logout', function () {
     return redirect('/');
 })->name('logout')->middleware('auth');
 
+// Tenant Logout Route
+Route::post('/tenant/logout', function () {
+    Auth::guard('tenant')->logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/');
+})->name('tenant.logout')->middleware('auth:tenant');
+
 // Home route
 Route::get('/', function () {
     return view('home', ['title' => 'Home - Property Management Solution']);
@@ -78,7 +86,23 @@ Route::get('/test-pdf', function () {
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
-Route::get('/email/verify', function () {
+Route::get('/email/verify', function (Request $request) {
+    if (!$request->user()->hasVerifiedEmail()) {
+        try {
+            $request->user()->sendEmailVerificationNotification();
+            logger()->info('Verification email sent automatically upon accessing verification page.', [
+                'user_id' => $request->user()->id,
+                'email' => $request->user()->email
+            ]);
+        } catch (Exception $e) {
+            logger()->error('Failed to send verification email automatically.', [
+                'user_id' => $request->user()->id,
+                'email' => $request->user()->email,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
     return view('auth.verify-email');
 })->middleware('auth')->name('verification.notice');
 
@@ -88,10 +112,45 @@ Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $requ
     return redirect('/admin')->with('verified', true);
 })->middleware(['auth', 'signed'])->name('verification.verify');
 
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
+// Logging for email verification status
+Route::get('/api/user/verification-status', function (Request $request) {
+    $isVerified = $request->user()->hasVerifiedEmail();
     
-    return back()->with('message', 'Verification link sent!');
+    // Log the verification status
+    
+    logger()->info('Verification status checked', [
+        'user_id' => $request->user()->id,
+        'email' => $request->user()->email,
+        'verified' => $isVerified
+    ]);
+
+    return response()->json([
+        'verified' => $isVerified
+    ]);
+})->middleware('auth');
+
+// Logging for resend email notification
+Route::post('/email/verification-notification', function (Request $request) {
+    try {
+        $request->user()->sendEmailVerificationNotification();
+        
+        // Log the resend action
+        logger()->info('Verification email resent from verification page.', [
+            'user_id' => $request->user()->id,
+            'email' => $request->user()->email
+        ]);
+
+        return back()->with('message', 'Verification link sent!');
+    } catch (Exception $e) {
+        // Log the error
+        logger()->error('Failed to resend verification email from verification page.', [
+            'user_id' => $request->user()->id,
+            'email' => $request->user()->email,
+            'error' => $e->getMessage()
+        ]);
+
+        return back()->with('error', 'Failed to send verification link.');
+    }
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 // API Route للتحقق من حالة التحقق (للاستخدام مع JavaScript)

@@ -18,7 +18,7 @@ use Carbon\Carbon;
 use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
-use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
+use Filament\Notifications\Notification;
 
 
 
@@ -119,15 +119,10 @@ class AccResource extends Resource
                                 ])
                                 ->columnSpan(1),
 
-                            PhoneInput::make('phone')
+                            Forms\Components\TextInput::make('phone')
                                 ->label(__('general.Phone'))
                                 ->required()
-                                ->defaultCountry('JO')
-                                ->onlyCountries(['JO', 'SA', 'AE', 'EG', 'LB', 'SY', 'IQ', 'KW', 'QA', 'BH', 'OM'])
-                                ->separateDialCode()
-                                ->validateFor()
-                                ->displayNumberFormat(PhoneInputNumberType::NATIONAL)
-                                ->inputNumberFormat(PhoneInputNumberType::E164)
+                                ->placeholder(__('general.Enter phone number'))
                                 ->columnSpan(1),
                         ]),
                     
@@ -279,21 +274,7 @@ class AccResource extends Resource
                     ->sortable()
                     ->icon('heroicon-o-phone')
                     ->copyable()
-                    ->color('info')
-                    ->formatStateUsing(function ($state) {
-                        if (empty($state)) {
-                            return null;
-                        }
-                        // Format phone number for display
-                        try {
-                            $phoneUtil = \libphonenumber\PhoneNumberUtil::getInstance();
-                            $phoneNumber = $phoneUtil->parse($state, null);
-                            return $phoneUtil->format($phoneNumber, \libphonenumber\PhoneNumberFormat::INTERNATIONAL);
-                        } catch (\Exception $e) {
-                            // If parsing fails, return the original value
-                            return $state;
-                        }
-                    }),
+                    ->color('info'),
 
                 // الحالة مع ألوان وأيقونات
                 Tables\Columns\TextColumn::make('status')
@@ -394,6 +375,22 @@ class AccResource extends Resource
                     ->icon('heroicon-o-user-plus')
                     ->color('info')
                     ->toggleable(isToggledHiddenByDefault: true),
+
+                // حالة التحقق من البريد الإلكتروني
+                Tables\Columns\IconColumn::make('email_verified_at')
+                    ->label(__('general.Email Verified'))
+                    ->boolean()
+                    ->sortable()
+                    ->toggleable()
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseColor('danger')
+                    ->trueColor('success')
+                    ->tooltip(function ($record) {
+                        return $record->email_verified_at 
+                            ? __('general.Verified on') . ' ' . $record->email_verified_at->format('Y-m-d H:i')
+                            : __('general.Email not verified');
+                    }),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
@@ -579,6 +576,43 @@ class AccResource extends Resource
                         : __('general.Manager deactivated successfully')),
                 
                 Tables\Actions\DeleteAction::make()->label(__('general.Delete')),
+
+                // إعادة إرسال رابط التحقق
+                Tables\Actions\Action::make('resend_verification')
+                    ->label(__('general.Resend Verification'))
+                    ->icon('heroicon-o-envelope')
+                    ->color('warning')
+                    ->visible(fn ($record) => is_null($record->email_verified_at))
+                    ->action(function ($record) {
+                        $record->sendEmailVerificationNotification();
+                        Notification::make()
+                            ->title(__('general.Verification email sent'))
+                            ->body(__('general.Verification link sent to') . ' ' . $record->email)
+                            ->success()
+                            ->send();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading(__('general.Resend Email Verification Link'))
+                    ->modalDescription(__('general.Are you sure you want to resend the verification link?'))
+                    ->modalSubmitActionLabel(__('general.Send')),
+
+                    Tables\Actions\Action::make('mark_verified')
+                    ->label(__('general.Mark as Verified'))
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn ($record) => is_null($record->email_verified_at))
+                    ->action(function ($record) {
+                        $record->update(['email_verified_at' => now()]);
+                        Notification::make()
+                            ->title(__('general.Email Verified Successfully'))
+                            ->body(__('general.Email verified for') . ' ' . $record->email)
+                            ->success()
+                            ->send();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading(__('general.Manually Verify Email'))
+                    ->modalDescription(__('general.Are you sure you want to manually verify the email?'))
+                    ->modalSubmitActionLabel(__('general.Verify')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

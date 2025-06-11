@@ -56,284 +56,306 @@ class Contract1Resource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
+            // القسم الأول: معلومات الأطراف
+            Forms\Components\Fieldset::make(__('general.Parties Information'))
+                ->schema([
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\TextInput::make('landlord_name')
+                                ->label(__('general.Landlord Name'))
+                                ->required()
+                                ->maxLength(255)
+                                ->placeholder(__('general.Enter landlord full name'))
+                                ->prefixIcon('heroicon-o-user')
+                                ->columnSpan(1),
 
-            /// Landlord and Tenant Info
-            Forms\Components\Section::make(__('general.Landlord and Tenant Information'))->schema([
-                Forms\Components\TextInput::make('landlord_name')
-                    ->label(__('general.Landlord Name'))
-                    ->required(),
+                            Forms\Components\Select::make('tenant_id')
+                                ->label(__('general.Tenant'))
+                                ->relationship('tenant', 'firstname')
+                                ->searchable()
+                                ->required()
+                                ->placeholder(__('general.Select tenant'))
+                                ->prefixIcon('heroicon-o-users')
+                                ->columnSpan(1),
+                        ]),
+                ])
+                ->columns(1),
 
-              Forms\Components\Select::make('tenant_id')
-                    ->label(__('general.Tenant'))
-                    ->relationship('tenant', 'firstname')
-                    ->searchable()
-                    ->required(),  
-            ])->columns(2),
+            // القسم الثاني: تفاصيل العقار والوحدة
+            Forms\Components\Fieldset::make(__('general.Property & Unit Details'))
+                ->schema([
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\Select::make('property_id')
+                                ->options(Property::all()->pluck('name', 'id'))
+                                ->required()
+                                ->label(__('general.Property'))
+                                ->searchable()
+                                ->preload()
+                                ->live()
+                                ->prefixIcon('heroicon-o-building-office-2')
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    $property = Property::with('address')->find($state);
+                                    if ($property?->address) {
+                                        $set('governorate', $property->address->governorate);
+                                        $set('city', $property->address->city);
+                                        $set('district', $property->address->district);
+                                        $set('building_number', $property->address->building_number);
+                                        $set('plot_number', $property->address->plot_number);
+                                        $set('basin_number', $property->address->basin_number);
+                                        $set('property_number', $property->address->property_number);
+                                        $set('street_name', $property->address->street_name);
+                                    }
+                                    $set('unit_id', null);
+                                })
+                                ->columnSpan(1),
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /// Property & Unit        
-
-            Forms\Components\Section::make(__('general.Property & Unit Details'))->schema([
-                Forms\Components\Select::make('property_id')
-                    ->options(Property::all()->pluck('name', 'id'))
-                    ->required()
-                    ->label(__('general.Property'))
-                    ->reactive()
-                    ->afterStateUpdated(function ($state, callable $set) {
-                        $property = Property::with('address')->find($state);
-                        if ($property?->address) {
-                            $set('governorate', $property->address->governorate);
-                            $set('city', $property->address->city);
-                            $set('district', $property->address->district);
-                            $set('building_number', $property->address->building_number);
-                            $set('plot_number', $property->address->plot_number);
-                            $set('basin_number', $property->address->basin_number);
-                            $set('property_number', $property->address->property_number);
-                            $set('street_name', $property->address->street_name);
-                        }
-                        $set('unit_id', null);
-                    }),
-                Forms\Components\Select::make('unit_id')
-                    ->options(fn (callable $get) =>
-                        Unit::where('property_id', $get('property_id'))->pluck('name', 'id')
-                    )
-                    ->required()
-                    ->label(__('general.Unit')),
-
-                Forms\Components\TextInput::make('governorate')->label(__('general.Governorate'))->readOnly(),
-                Forms\Components\TextInput::make('city')->label(__('general.City'))->readOnly(),
-                Forms\Components\TextInput::make('district')->label(__('general.District'))->readOnly(),
-                Forms\Components\TextInput::make('building_number')->label(__('general.Building Number'))->readOnly(),
-                Forms\Components\TextInput::make('plot_number')->label(__('general.Plot Number'))->readOnly(),
-                Forms\Components\TextInput::make('basin_number')->label(__('general.Basin Number'))->readOnly(),
-                Forms\Components\TextInput::make('property_number')->label(__('general.Property Number'))->readOnly(),
-                Forms\Components\TextInput::make('street_name')->label(__('general.Street Name'))->readOnly(),
-            ])->columns(3),
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /// Contract Details
-            Forms\Components\Section::make(__('general.Contract Details'))->schema([
-                Forms\Components\DatePicker::make('start_date')
-                    ->label(__('general.Start Date'))
-                    ->required(),
-                Forms\Components\DatePicker::make('end_date')
-                    ->label(__('general.End Date'))
-                    ->required(),
-                Forms\Components\DatePicker::make('due_date')
-                    ->label(__('general.Due Date')),
-                Forms\Components\TextInput::make('rent_amount')
-                    ->label(__('general.Rent Amount'))
-                    ->numeric()
-                    ->required(),
-                Forms\Components\Select::make('status')
-                    ->label(__('general.Contract Status'))
-                    ->options([
-                        'active' => __('general.Active'), 
-                        'inactive' => __('general.Inactive')
-                    ])
-                    ->default('active')
-                    ->reactive()
-                    ->afterStateHydrated(function (callable $set, callable $get) {
-                        $startDate = $get('start_date');
-                        $endDate = $get('end_date');
-
-                        if (
-                            $startDate && $endDate &&
-                            Carbon::parse($startDate)->lte(now()) &&
-                            Carbon::parse($endDate)->gte(now())
-                        ) {
-                            $set('status', 'active');
-                        } else {
-                            $set('status', 'inactive');
-                        }
-                    }),
-            ])->columns(3),
-
- Forms\Components\Section::make(__('general.Terms and Conditions'))->schema([
-                Forms\Components\Textarea::make('terms_and_conditions_extra')
-                    ->label(__('general.Additional Terms and Conditions')),
-                Forms\Components\Actions::make([
-                    Forms\Components\Actions\Action::make('show_terms')
-                        ->label(__('general.Show Default Terms'))
-                        ->color('success')
-                        ->icon('heroicon-o-eye')
-                        ->modalHeading(__('general.Default Terms and Conditions'))
-                        ->modalContent(fn() => new \Illuminate\Support\HtmlString('
-                            <div style="
-                                direction: rtl;
-                                text-align: right;
-                                font-size: 1.1rem;
-                                background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
-                                border-radius: 16px;
-                                box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-                                padding: 32px 24px;
-                                margin: 0 auto;
-                                max-width: 800px;
-                                border: 1px solid #e5e7eb;
-                                line-height: 2.1;
-                            ">
-                                <h2 style="color:#2563eb;font-weight:bold;font-size:1.3rem;margin-bottom:18px;text-align:center;">
-                                    الشروط والأحكام الافتراضية لعقد الإيجار
-                                </h2>
-                                <ol style="padding-right: 18px;">
-                                    <li><strong>أولاً:</strong> تعتبر مقدمة هذا العقد وشروطه وملحقاته إن وجدت جزءاً لا يتجزأ منه وتقرأ معه كوحدة واحدة.</li>
-                                    <li><strong>ثانياً:</strong> يقر المستأجر بأنه قد استلم المأجور وملحقاته سالماً من كل عيب وقد عاين بنفسه كافة الأبواب والشبابيك والزجاج والغالات بمفاتيحها والمغاسل والحنفيات والأدوات الصحية والدهان والبلاط والسيراميك والجبصين وكامل الديكورات وأن جميع هذه الأشياء والتوابع جديدة وسليمة وخالية من أي عيب أو خلل ويتعهد المستأجر بتسليمها عند انتهاء مدة الإجارة جديدة بالحالة التي استلمها بها.</li>
-                                    <li><strong>ثالثاً:</strong> يجب على المستأجر قبل انتهاء مدة العقد إذا كان لا يرغب بالتجديد لمدة مماثلة أن يقوم بتبليغ المؤجر قبل انتهاء مدة العقد بشهرين على الأقل وإلا يعتبر مستأجراً للعقار لمدة مماثلة أخرى إذا أراد المؤجر ذلك، مع التأكيد على عدم انطباق هذا الشرط على المؤجر.</li>
-                                    <li><strong>رابعاً:</strong> لا يجوز للمستأجر تأجير المأجور أو جزء منه للغير أو إدخال شريك أو شركة معه في المأجور أو التخلي عنه كلياً أو جزئياً للغير بدون موافقة المؤجر الخطية.</li>
-                                    <li><strong>خامساً:</strong> لا يحق للمستأجر أن يحدث أي تغيير في المأجور من هدم، أو بناء، أو فتح شبابيك، أو إحداث سدة، أو إحداث أي تغيير في الأبواب أو الحنفيات أو ثقب الجدران وغيرها إلا بموافقة المؤجر الخطية، وفي كل الأحوال على أن يقوم بإعادتها على نفقته إلى الحالة التي استلمها عليه عند توقيعه للعقد، ويجب على المستأجر إعادة أي ملحقات استلمها مع المأجور بالحالة التي استلمها بها.</li>
-                                    <li><strong>سادساً:</strong> كل ما يحصل في المأجور من عطل، أو عيب، أو خراب أو تلف في المجاري، أو التمديدات الصحية، أو الكهربائية، أو القصارة، أو التشطيبات، أو أي من المرافق الملحقة بالمأجور فيعود تصليحها على المستأجر ولا يحق له أن يطالب المؤجر بشيء من التعويضات كما لا يحق له أن يطالب المؤجر بأي تعويضات أو ضرر أو عطل مهما كان نوعه بسبب أي تعطيل أو خلل يحصل في الخدمات المشتركة الملحقة بالعمارة.</li>
-                                    <li><strong>سابعاً:</strong> يلتزم المستأجر بدفع كافة الرسوم والمصاريف والنفقات والفواتير المفروضة على المأجور بما فيها أجور الحراسة والنظافة والكهرباء والهاتف وضريبة المسقفات وضريبة المعارف بالإضافة إلى كافة نفقات الصيانة وغيرها.</li>
-                                    <li><strong>ثامناً:</strong> إذا امتنع أو تأخر المستأجر عن دفع أي قسط من أقساط بدل الإيجار بعد مرور عشرة أيام على ميعاد استحقاقه فتصبح جميع أقساط العقد مستحقة الدفع فوراً ودفعة واحدة، وللمؤجر أيضاً الحق والخيار بفسخ هذا العقد واستلام المأجور ولو أن مدة الإجارة لم تنته كما وله الحق بوضع يده عليه وإجارته للغير بالبدل الذي يراه مناسباً على أن يعود بالفرق بين البدلين على المستأجر بحال نقصان البدل الثاني عن الأول.</li>
-                                    <li><strong>تاسعاً:</strong> بحال حدوث أمر من الأمرين المذكورين في البندين السابقين من هذا العقد فإن للمؤجر الحق أيضاً بوضع يده على أموال المستأجر الموجودة في المأجور وبيعها بالثمن الذي يراه مناسباً واستيفاء حقوقه من ثمنها.</li>
-                                    <li><strong>عاشراً:</strong> للمؤجر الحق أن يبني طوابق علوية فوق المأجور أو بالقرب منه وأن يعمل جميع التصليحات والترميمات التي يريدها في المأجور وتوابعه أو بقربه مهما اقتضى لها من الوقت في مدة هذه الإجارة أو في المدة التي تمتد إليها ولا يجوز للمستأجر في ذلك الحال أن يطالب المؤجر بالتعويض عن أي عطل أو ضرر أو تنزيل في الأجرة بسبب هذه الأعمال.</li>
-                                    <li><strong>الحادي عشر:</strong> جميع ما يقوم به المستأجر من تحسينات أو تصليحات، أو أعمال ديكور أو غيره تكون نفقتها عليه وحده وعند خروجه يكون المؤجر مخيراً إما بأخذها كما هي بدون مقابل أو بطلب إعادة المأجور كما كان عليه لحظة هذا العقد، وفي ذلك الحال تكون نفقات إعادة الحال وإزالتها مهما بلغت على نفقة المستأجر وحده.</li>
-                                    <li><strong>الثاني عشر:</strong> لا يجوز للمستأجر أن يشغل العقار المستأجر لغير الغاية التي استأجر لها أو أن يستعمله فيما يخالف الشرع والقانون والنظام العام والآداب العامة، ولا يجوز له إحداث الضوضاء أو التسبب في الإزعاج للمجاورين.</li>
-                                    <li><strong>الثالث عشر:</strong> إذا كان المستأجرين في هذا العقد أكثر من شخص واحد فيعتبرون متكافلين ومتضامنين في كل ما ينشأ عنه من التزامات، وإذا كان المستأجر شركة أو شخصاً معنوياً فإن الشخص أو الأشخاص الذين يوقع و/أو يوقعون عن الشركة أو المؤسسة (الشخص المعنوي) يعتبر و/أو يعتبرون مسؤولاً و/أو مسؤولين بالتكافل والتضامن معها بجميع مسؤوليات المستأجر في هذا العقد وما يترتب عليه من الالتزامات فيه طيلة مدة هذا العقد وأية مدد أخرى يتجدد إليها.</li>
-                                    <li><strong>الرابع عشر:</strong> في حال رغب المؤجر إنهاء العقد في نهاية مدته أو لم يرغب بتجديد العقد لمدة مماثلة فيُعفى من توجيه الإنذار الذي يتطلبه قانون المالكين والمستأجرين ويجوز تقديم طلب مستعجل لإنهاء العقد مباشرة بعد انتهاء المهلة التي حددها القانون.</li>
-                                    <li><strong>الخامس عشر:</strong> لا يجوز للمستأجر أن يخالف أحكام البناء والتنظيم ويكون ملزماً بتحمل أية مخالفة أو غرامة ناجمة عن مخالفة القوانين أو الأنظمة أو تعليمات البلديات أو أحكام قانون الطوابق والشقق أو أمانة عمان وذلك عن طيلة فترة إشغاله للعقار.</li>
-                                    <li><strong>السادس عشر:</strong> يلتزم المستأجر بنهاية مدة العقد بإحضار براءة ذمة للمؤجر من شركة الكهرباء وسلطة المياه والبلدية يثبت فيها عدم وجود أية مبالغ مترتبة على المأجور خلال فترة الإيجار.</li>
-                                    <li><strong>السابع عشر:</strong> للمؤجر الحق في تحديد أماكن وضع صحون الستالايت واللواقط الإلكترونية والإذاعية وخزانات الماء ولا يحق للمستأجر إضافة خزانات مياه إضافية بدون موافقة المؤجر الخطية مهما كانت غاية الإيجار.</li>
-                                    <li><strong>الثامن عشر:</strong> إذا كان العقار المؤجر شقة فيلتزم المستأجر بأحكام قانون الملكية العقارية ونظام إدارة الشقق ويلتزم بدفع ما يترتب على الشقة من مستحقات تفرض على إدارة أو استعمال الخدمات المشتركة وإذا كان للبناية حارس أو عامل نظافة فيلزم بدفع مستحقاته ويلتزم بدفع أية نفقات صيانة الخدمات المشتركة بما فيها صيانة المصعد أو صيانة السطح حتى لو لم يكن يستخدمهما ويلتزم بدفع نسبته من فواتير المياه والكهرباء التي تستحق على الخدمات المشتركة، ولا يجوز له بأي حال من الأحوال رفض المشاركة في مصاريف الخدمات المشتركة ولا يجوز له التذرع بعدم الاستفادة منها ويجب عليه أن يتقيد بالمكان المخصص لاصطفاف سيارته ولا يجوز له التعدي على الكراجات المخصصة لغيره من السكان.</li>
-                                    <li><strong>التاسع عشر:</strong> إن عدم احترام الجوار الساكنين في البناية التي تقع بها الشقة أو التي تقابلهم أو إيذاء أي من الجوار بأي أفعال لا يتقبلها العرف والعادة يعتبر سبباً لفسخ العقد ويلزم المستأجر بالتعويض عن أي عطل أو ضرر يلحق بالمالك أو بالآخرين.</li>
-                                </ol>
-                            </div>
-                        '))
-                        ->modalSubmitAction(false)
-
-                ]),
-     ])->columns(3),
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /// Signatures
-Forms\Components\Section::make(__('general.Digital Signatures'))
-    ->schema([
-    SignaturePad::make('tenant_signature_path')
-    ->label(__('general.Tenant Signature'))
-    ->required()
-    ->exportPenColor('#007bff')
-    ->dehydrateStateUsing(function ($state, callable $set) {
-        if ($state) {
-            // Remove base64 prefix
-            $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $state));
-            
-            // Generate random filename
-            $fileName = 'contracts/signatures/' . Str::uuid() . '.png';
-
-            // Ensure directory exists
-            $directory = public_path('uploads/contracts/signatures');
-            if (!is_dir($directory)) {
-                mkdir($directory, 0755, true);
-            }
-
-            // Save file to public/uploads/contracts/signatures
-            $publicPath = public_path('uploads/' . $fileName);
-            file_put_contents($publicPath, $imageData);
-
-            // Return the filename to be saved in database
-            return $fileName;
-        }
-
-        return null;
-    }),
-    // Landlord signature
-        SignaturePad::make('landlord_signature_path')
-            ->label(__('general.Landlord Signature'))
-            ->required()
-            ->exportPenColor('#007bff')
-            ->dehydrateStateUsing(function ($state, callable $set) {
-                if ($state) {
-                    $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $state));
-                    $fileName = 'contracts/signatures/' . Str::uuid() . '.png';
+                            Forms\Components\Select::make('unit_id')
+                                ->options(fn (callable $get) =>
+                                    Unit::where('property_id', $get('property_id'))->pluck('name', 'id')
+                                )
+                                ->required()
+                                ->label(__('general.Unit'))
+                                ->searchable()
+                                ->prefixIcon('heroicon-o-home')
+                                ->placeholder(__('general.Select unit'))
+                                ->columnSpan(1),
+                        ]),
                     
-                    // Ensure directory exists
-                    $directory = public_path('uploads/contracts/signatures');
-                    if (!is_dir($directory)) {
-                        mkdir($directory, 0755, true);
-                    }
+                    // عنوان العقار
+                    Forms\Components\Grid::make(4)
+                        ->schema([
+                            Forms\Components\TextInput::make('governorate')
+                                ->label(__('general.Governorate'))
+                                ->readOnly()
+                                ->prefixIcon('heroicon-o-map-pin'),
+                            
+                            Forms\Components\TextInput::make('city')
+                                ->label(__('general.City'))
+                                ->readOnly()
+                                ->prefixIcon('heroicon-o-building-office'),
+                            
+                            Forms\Components\TextInput::make('district')
+                                ->label(__('general.District'))
+                                ->readOnly()
+                                ->prefixIcon('heroicon-o-map'),
+                            
+                            Forms\Components\TextInput::make('street_name')
+                                ->label(__('general.Street Name'))
+                                ->readOnly()
+                                ->prefixIcon('heroicon-o-map-pin'),
+                        ]),
                     
-                    $publicPath = public_path('uploads/' . $fileName);
-                    file_put_contents($publicPath, $imageData);
-                    
-                    // Return the filename to be saved in database
-                    return $fileName;
-                }
-                return null;
-            }),
+                    Forms\Components\Grid::make(4)
+                        ->schema([
+                            Forms\Components\TextInput::make('building_number')
+                                ->label(__('general.Building Number'))
+                                ->readOnly()
+                                ->prefixIcon('heroicon-o-hashtag'),
+                            
+                            Forms\Components\TextInput::make('plot_number')
+                                ->label(__('general.Plot Number'))
+                                ->readOnly()
+                                ->prefixIcon('heroicon-o-hashtag'),
+                            
+                            Forms\Components\TextInput::make('basin_number')
+                                ->label(__('general.Basin Number'))
+                                ->readOnly()
+                                ->prefixIcon('heroicon-o-hashtag'),
+                            
+                            Forms\Components\TextInput::make('property_number')
+                                ->label(__('general.Property Number'))
+                                ->readOnly()
+                                ->prefixIcon('heroicon-o-hashtag'),
+                        ]),
+                ])
+                ->columns(1),
 
-        // First Witness Signature
-        SignaturePad::make('witness1_signature_path')
-            ->label(__('general.First Witness Signature'))
-            ->required()
-            ->exportPenColor('#007bff')
-            ->dehydrateStateUsing(function ($state, callable $set) {
-                if ($state) {
-                    $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $state));
-                    $fileName = 'contracts/signatures/' . Str::uuid() . '.png';
+            // القسم الثالث: تفاصيل العقد المالية والزمنية
+            Forms\Components\Fieldset::make(__('general.Contract Financial & Time Details'))
+                ->schema([
+                    Forms\Components\Grid::make(3)
+                        ->schema([
+                            Forms\Components\DatePicker::make('start_date')
+                                ->label(__('general.Start Date'))
+                                ->required()
+                                ->prefixIcon('heroicon-o-calendar')
+                                ->placeholder(__('general.Select start date'))
+                                ->live()
+                                ->columnSpan(1),
+                            
+                            Forms\Components\DatePicker::make('end_date')
+                                ->label(__('general.End Date'))
+                                ->required()
+                                ->prefixIcon('heroicon-o-calendar')
+                                ->placeholder(__('general.Select end date'))
+                                ->live()
+                                ->columnSpan(1),
+                            
+                            Forms\Components\DatePicker::make('due_date')
+                                ->label(__('general.Due Date'))
+                                ->prefixIcon('heroicon-o-calendar-days')
+                                ->placeholder(__('general.Select due date'))
+                                ->columnSpan(1),
+                        ]),
                     
-                    // Ensure directory exists
-                    $directory = public_path('uploads/contracts/signatures');
-                    if (!is_dir($directory)) {
-                        mkdir($directory, 0755, true);
-                    }
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\TextInput::make('rent_amount')
+                                ->label(__('general.Rent Amount'))
+                                ->numeric()
+                                ->required()
+                                ->suffix('JOD')
+                                ->prefixIcon('heroicon-o-banknotes')
+                                ->placeholder(__('general.Enter rent amount'))
+                                ->minValue(0)
+                                ->columnSpan(1),
+                            
+                            Forms\Components\Select::make('status')
+                                ->label(__('general.Contract Status'))
+                                ->options([
+                                    'active' => __('general.Active'),
+                                    'inactive' => __('general.Inactive'),
+                                    'pending' => __('general.Pending'),
+                                    'expired' => __('general.Expired'),
+                                ])
+                                ->default('active')
+                                ->required()
+                                ->prefixIcon('heroicon-o-check-circle')
+                                ->columnSpan(1),
+                        ]),
+                ])
+                ->columns(1),
+
+            // القسم الرابع: الشروط والأحكام
+            Forms\Components\Fieldset::make(__('general.Terms and Conditions'))
+                ->schema([
+                    Forms\Components\Textarea::make('terms_and_conditions_extra')
+                        ->label(__('general.Additional Terms and Conditions'))
+                        ->placeholder(__('general.Enter any additional terms and conditions'))
+                        ->rows(4)
+                        ->columnSpanFull(),
+                ])
+                ->columns(1),
+
+            // القسم الخامس: التوقيعات الرقمية
+            Forms\Components\Fieldset::make(__('general.Digital Signatures'))
+                ->schema([
+                    // توقيع المستأجر
+                    SignaturePad::make('tenant_signature_path')
+                        ->label(__('general.Tenant Signature'))
+                        ->required()
+                        ->dehydrateStateUsing(function ($state) {
+                            if ($state) {
+                                $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $state));
+                                $fileName = 'contracts/signatures/' . Str::uuid() . '.png';
+                                
+                                $directory = public_path('uploads/contracts/signatures');
+                                if (!is_dir($directory)) {
+                                    mkdir($directory, 0755, true);
+                                }
+                                
+                                $publicPath = public_path('uploads/' . $fileName);
+                                file_put_contents($publicPath, $imageData);
+                                
+                                return $fileName;
+                            }
+                            return null;
+                        }),
+
+                    // توقيع المؤجر
+                    SignaturePad::make('landlord_signature_path')
+                        ->label(__('general.Landlord Signature'))
+                        ->required()
+                        ->dehydrateStateUsing(function ($state) {
+                            if ($state) {
+                                $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $state));
+                                $fileName = 'contracts/signatures/' . Str::uuid() . '.png';
+                                
+                                $directory = public_path('uploads/contracts/signatures');
+                                if (!is_dir($directory)) {
+                                    mkdir($directory, 0755, true);
+                                }
+                                
+                                $publicPath = public_path('uploads/' . $fileName);
+                                file_put_contents($publicPath, $imageData);
+                                
+                                return $fileName;
+                            }
+                            return null;
+                        }),
+                ])
+                ->columns(2),
+
+            // القسم السادس: معلومات الشهود
+            Forms\Components\Fieldset::make(__('general.Witnesses Information'))
+                ->schema([
+                    Forms\Components\TextInput::make('witness1_name')
+                        ->label(__('general.First Witness Name'))
+                        ->maxLength(255),
                     
-                    $publicPath = public_path('uploads/' . $fileName);
-                    file_put_contents($publicPath, $imageData);
+                    SignaturePad::make('witness1_signature_path')
+                        ->label(__('general.First Witness Signature'))
+                        ->required()
+                        ->dehydrateStateUsing(function ($state) {
+                            if ($state) {
+                                $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $state));
+                                $fileName = 'contracts/signatures/' . Str::uuid() . '.png';
+                                
+                                $directory = public_path('uploads/contracts/signatures');
+                                if (!is_dir($directory)) {
+                                    mkdir($directory, 0755, true);
+                                }
+                                
+                                $publicPath = public_path('uploads/' . $fileName);
+                                file_put_contents($publicPath, $imageData);
+                                
+                                return $fileName;
+                            }
+                            return null;
+                        }),
+
+                    Forms\Components\TextInput::make('witness2_name')
+                        ->label(__('general.Second Witness Name'))
+                        ->maxLength(255),
                     
-                    // Return the filename to be saved in database
-                    return $fileName;
-                }
-                return null;
-            }),
+                    SignaturePad::make('witness2_signature_path')
+                        ->label(__('general.Second Witness Signature'))
+                        ->required()
+                        ->dehydrateStateUsing(function ($state) {
+                            if ($state) {
+                                $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $state));
+                                $fileName = 'contracts/signatures/' . Str::uuid() . '.png';
+                                
+                                $directory = public_path('uploads/contracts/signatures');
+                                if (!is_dir($directory)) {
+                                    mkdir($directory, 0755, true);
+                                }
+                                
+                                $publicPath = public_path('uploads/' . $fileName);
+                                file_put_contents($publicPath, $imageData);
+                                
+                                return $fileName;
+                            }
+                            return null;
+                        }),
+                ])
+                ->columns(2),
 
-        // First Witness Name
-        Forms\Components\TextInput::make('witness1_name')
-            ->label(__('general.First Witness Name'))
-            ->maxLength(255),
-
-        // Second Witness Signature
-        SignaturePad::make('witness2_signature_path')
-            ->label(__('general.Second Witness Signature'))
-            ->required()
-            ->exportPenColor('#007bff')
-            ->dehydrateStateUsing(function ($state, callable $set) {
-                if ($state) {
-                    $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $state));
-                    $fileName = 'contracts/signatures/' . Str::uuid() . '.png';
+            // القسم السابع: معلومات إضافية
+            Forms\Components\Fieldset::make(__('general.Meta Information'))
+                ->schema([
+                    Forms\Components\DatePicker::make('hired_date')
+                        ->label(__('general.Created Date'))
+                        ->default(now())
+                        ->disabled(),
                     
-                    // Ensure directory exists
-                    $directory = public_path('uploads/contracts/signatures');
-                    if (!is_dir($directory)) {
-                        mkdir($directory, 0755, true);
-                    }
-                    
-                    $publicPath = public_path('uploads/' . $fileName);
-                    file_put_contents($publicPath, $imageData);
-                    
-                    // Return the filename to be saved in database
-                    return $fileName;
-                }
-                return null;
-            }),
-
-        // Second Witness Name
-        Forms\Components\TextInput::make('witness2_name')
-            ->label(__('general.Second Witness Name'))
-            ->maxLength(255),
-    ])->columns(4),
-            
-
-
-
-        // Pen color on export (defaults to penColor)
-            Forms\Components\Section::make('Meta Information')->schema([
-                Forms\Components\DatePicker::make('hired_date')
-                    ->label('Created Date')
-                    ->default(now())
-                    ->readOnly(),
-                Forms\Components\TextInput::make('hired_by')
-                    ->label('Created By')
-                    ->default(fn () => Auth::user()?->name)
-                    ->readOnly(),
-            ])->columns(2),
+                    Forms\Components\TextInput::make('hired_by')
+                        ->label(__('general.Created By'))
+                        ->default(fn () => Auth::user()?->name)
+                        ->disabled(),
+                ])
+                ->columns(2),
         ]);
     }
 

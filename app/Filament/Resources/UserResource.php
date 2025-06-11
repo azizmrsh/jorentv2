@@ -17,7 +17,6 @@ use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
 use Filament\Notifications\Notification;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
-use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 
@@ -133,14 +132,9 @@ class UserResource extends Resource
                                 ])
                                 ->columnSpan(1),
 
-                            PhoneInput::make('phone')
+                            Forms\Components\TextInput::make('phone')
                                 ->label(__('general.Phone'))
                                 ->required()
-                                ->defaultCountry('JO')
-                                ->separateDialCode()
-                                ->validateFor()
-                                ->displayNumberFormat(PhoneInputNumberType::NATIONAL)
-                                ->inputNumberFormat(PhoneInputNumberType::E164)
                                 ->placeholder(__('general.Enter phone number'))
                                 ->columnSpan(1),
                         ]),
@@ -241,21 +235,7 @@ class UserResource extends Resource
                     ->sortable()
                     ->icon('heroicon-o-phone')
                     ->copyable()
-                    ->color('info')
-                    ->formatStateUsing(function ($state) {
-                        if (empty($state)) {
-                            return null;
-                        }
-                        // Format phone number for display
-                        try {
-                            $phoneUtil = \libphonenumber\PhoneNumberUtil::getInstance();
-                            $phoneNumber = $phoneUtil->parse($state, null);
-                            return $phoneUtil->format($phoneNumber, \libphonenumber\PhoneNumberFormat::INTERNATIONAL);
-                        } catch (\Exception $e) {
-                            // If parsing fails, return the original value
-                            return $state;
-                        }
-                    }),
+                    ->color('info'),
 
                 // الدور مع ألوان وأيقونات
                 Tables\Columns\TextColumn::make('role')

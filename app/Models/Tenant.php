@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough; // إضافة هذا
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\TenantVerifyEmail;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
 
 
-class Tenant extends Model
+class Tenant extends Authenticatable implements MustVerifyEmail, FilamentUser, HasName
 {
     use HasFactory, Notifiable;
 
@@ -35,12 +39,23 @@ class Tenant extends Model
         'hired_by'
     ];
 
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'birth_date' => 'date',
         'hired_date' => 'date',
         'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
 
 
@@ -130,7 +145,27 @@ class Tenant extends Model
         return $this->getAttribute($this->getKeyName());
     }
 
+    /**
+     * Get the name for Filament display.
+     */
+    public function getFilamentName(): string
+    {
+        return $this->getFullNameAttribute();
+    }
 
+    /**
+     * Check if tenant can access Filament.
+     */
+    public function canAccessFilament(): bool
+    {
+        return $this->status === 'active';
+    }
 
-
+    /**
+     * Check if tenant can access specific panel.
+     */
+    public function canAccessPanel(\Filament\Panel $panel): bool
+    {
+        return $this->status === 'active' && $panel->getId() === 'tenant';
+    }
 }
