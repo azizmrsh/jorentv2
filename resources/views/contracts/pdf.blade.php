@@ -10,12 +10,6 @@
         @page {
             margin: 25px 20px;
         }
-     <div class="container">
-        <div class="header">
-            <div style="font-size: 16px; margin-bottom: 10px; font-weight: bold;">بسم الله الرحمن الرحيم</div>
-            <h1 class="contract-title">عقد إيجار رسمي</h1>
-            <p class="contract-subtitle">محرر بتاريخ {{ \Carbon\Carbon::now()->format('Y/m/d') }}</p>
-        </div>  
         * {
             margin: 0;
             padding: 0;
