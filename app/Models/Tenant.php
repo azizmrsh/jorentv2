@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough; // إضافة هذا
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\TenantVerifyEmail;
@@ -13,7 +14,12 @@ use App\Notifications\TenantVerifyEmail;
 
 class Tenant extends Model
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
+
+    /**
+     * The guard name used by spatie/laravel-permission.
+     */
+    protected string $guard_name = 'web';
 
     protected $fillable = [
         'firstname',

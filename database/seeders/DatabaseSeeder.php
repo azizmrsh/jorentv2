@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Database\Seeders\RolePermissionSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,6 +19,7 @@ class DatabaseSeeder extends Seeder
             PaymentSeeder::class,
             Contract1Seeder::class,
             PropertyTestSeeder::class, // Added for additional Arabic property examples
+            RolePermissionSeeder::class,
         ]);
         
         $this->command->info('🎯 تم إنشاء البيانات التجريبية العربية-الأردنية بنجاح!');

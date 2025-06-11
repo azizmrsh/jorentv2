@@ -4,10 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Permission\Traits\HasRoles;
 
 class Acc extends Model
 {
-    use HasFactory;
+    use HasFactory, HasRoles;
+
+    /**
+     * The guard name used by spatie/laravel-permission.
+     */
+    protected string $guard_name = 'web';
     //
     protected $fillable = [
         'firstname',
