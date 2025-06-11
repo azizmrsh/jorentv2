@@ -1,0 +1,267 @@
+<?php
+
+namespace App\Helpers;
+
+class NationalityHelper
+{
+    /**
+     * Get all nationalities as key-value pairs for select options
+     * 
+     * @return array
+     */
+    public static function getAllNationalities(): array
+    {
+        return [
+            // Arab Countries (prioritized first)
+            'jordanian' => __('general.Jordanian'),
+            'saudi' => __('general.Saudi'),
+            'egyptian' => __('general.Egyptian'),
+            'lebanese' => __('general.Lebanese'),
+            'syrian' => __('general.Syrian'),
+            'iraqi' => __('general.Iraqi'),
+            'emirian' => __('general.Emirian'),
+            'qatari' => __('general.Qatari'),
+            'kuwaiti' => __('general.Kuwaiti'),
+            'bahraini' => __('general.Bahraini'),
+            'omani' => __('general.Omani'),
+            'yemenite' => __('general.Yemenite'),
+            'moroccan' => __('general.Moroccan'),
+            'algerian' => __('general.Algerian'),
+            'tunisian' => __('general.Tunisian'),
+            'libyan' => __('general.Libyan'),
+            'sudanese' => __('general.Sudanese'),
+            
+            // Other Countries (alphabetically)
+            'afghan' => __('general.Afghan'),
+            'albanian' => __('general.Albanian'),
+            'american' => __('general.American'),
+            'andorran' => __('general.Andorran'),
+            'angolan' => __('general.Angolan'),
+            'antiguans' => __('general.Antiguans'),
+            'argentinean' => __('general.Argentinean'),
+            'armenian' => __('general.Armenian'),
+            'australian' => __('general.Australian'),
+            'austrian' => __('general.Austrian'),
+            'azerbaijani' => __('general.Azerbaijani'),
+            'bahamian' => __('general.Bahamian'),
+            'bangladeshi' => __('general.Bangladeshi'),
+            'barbadian' => __('general.Barbadian'),
+            'belarusian' => __('general.Belarusian'),
+            'belgian' => __('general.Belgian'),
+            'belizean' => __('general.Belizean'),
+            'beninese' => __('general.Beninese'),
+            'bhutanese' => __('general.Bhutanese'),
+            'bolivian' => __('general.Bolivian'),
+            'bosnian' => __('general.Bosnian'),
+            'brazilian' => __('general.Brazilian'),
+            'british' => __('general.British'),
+            'bruneian' => __('general.Bruneian'),
+            'bulgarian' => __('general.Bulgarian'),
+            'burkinabe' => __('general.Burkinabe'),
+            'burmese' => __('general.Burmese'),
+            'burundian' => __('general.Burundian'),
+            'cambodian' => __('general.Cambodian'),
+            'cameroonian' => __('general.Cameroonian'),
+            'canadian' => __('general.Canadian'),
+            'cape_verdean' => __('general.Cape Verdean'),
+            'central_african' => __('general.Central African'),
+            'chadian' => __('general.Chadian'),
+            'chilean' => __('general.Chilean'),
+            'chinese' => __('general.Chinese'),
+            'colombian' => __('general.Colombian'),
+            'comoran' => __('general.Comoran'),
+            'congolese' => __('general.Congolese'),
+            'costa_rican' => __('general.Costa Rican'),
+            'croatian' => __('general.Croatian'),
+            'cuban' => __('general.Cuban'),
+            'cypriot' => __('general.Cypriot'),
+            'czech' => __('general.Czech'),
+            'danish' => __('general.Danish'),
+            'djibouti' => __('general.Djibouti'),
+            'dominican' => __('general.Dominican'),
+            'dutch' => __('general.Dutch'),
+            'east_timorese' => __('general.East Timorese'),
+            'ecuadorean' => __('general.Ecuadorean'),
+            'equatorial_guinean' => __('general.Equatorial Guinean'),
+            'eritrean' => __('general.Eritrean'),
+            'estonian' => __('general.Estonian'),
+            'ethiopian' => __('general.Ethiopian'),
+            'fijian' => __('general.Fijian'),
+            'filipino' => __('general.Filipino'),
+            'finnish' => __('general.Finnish'),
+            'french' => __('general.French'),
+            'gabonese' => __('general.Gabonese'),
+            'gambian' => __('general.Gambian'),
+            'georgian' => __('general.Georgian'),
+            'german' => __('general.German'),
+            'ghanaian' => __('general.Ghanaian'),
+            'greek' => __('general.Greek'),
+            'grenadian' => __('general.Grenadian'),
+            'guatemalan' => __('general.Guatemalan'),
+            'guinea_bissauan' => __('general.Guinea-Bissauan'),
+            'guinean' => __('general.Guinean'),
+            'guyanese' => __('general.Guyanese'),
+            'haitian' => __('general.Haitian'),
+            'herzegovinian' => __('general.Herzegovinian'),
+            'honduran' => __('general.Honduran'),
+            'hungarian' => __('general.Hungarian'),
+            'i_kiribati' => __('general.I-Kiribati'),
+            'icelander' => __('general.Icelander'),
+            'indian' => __('general.Indian'),
+            'indonesian' => __('general.Indonesian'),
+            'iranian' => __('general.Iranian'),
+            'irish' => __('general.Irish'),
+            'israeli' => __('general.Israeli'),
+            'italian' => __('general.Italian'),
+            'ivorian' => __('general.Ivorian'),
+            'jamaican' => __('general.Jamaican'),
+            'japanese' => __('general.Japanese'),
+            'kazakhstani' => __('general.Kazakhstani'),
+            'kenyan' => __('general.Kenyan'),
+            'kittian_and_nevisian' => __('general.Kittian and Nevisian'),
+            'kyrgyz' => __('general.Kyrgyz'),
+            'laotian' => __('general.Laotian'),
+            'latvian' => __('general.Latvian'),
+            'liberian' => __('general.Liberian'),
+            'liechtensteiner' => __('general.Liechtensteiner'),
+            'lithuanian' => __('general.Lithuanian'),
+            'luxembourger' => __('general.Luxembourger'),
+            'macedonian' => __('general.Macedonian'),
+            'malagasy' => __('general.Malagasy'),
+            'malawian' => __('general.Malawian'),
+            'malaysian' => __('general.Malaysian'),
+            'maldivan' => __('general.Maldivan'),
+            'malian' => __('general.Malian'),
+            'maltese' => __('general.Maltese'),
+            'marshallese' => __('general.Marshallese'),
+            'mauritanian' => __('general.Mauritanian'),
+            'mauritian' => __('general.Mauritian'),
+            'mexican' => __('general.Mexican'),
+            'micronesian' => __('general.Micronesian'),
+            'moldovan' => __('general.Moldovan'),
+            'monacan' => __('general.Monacan'),
+            'mongolian' => __('general.Mongolian'),
+            'mosotho' => __('general.Mosotho'),
+            'motswana' => __('general.Motswana'),
+            'mozambican' => __('general.Mozambican'),
+            'namibian' => __('general.Namibian'),
+            'nauruan' => __('general.Nauruan'),
+            'nepalese' => __('general.Nepalese'),
+            'new_zealander' => __('general.New Zealander'),
+            'ni_vanuatu' => __('general.Ni-Vanuatu'),
+            'nicaraguan' => __('general.Nicaraguan'),
+            'nigerien' => __('general.Nigerien'),
+            'north_korean' => __('general.North Korean'),
+            'northern_irish' => __('general.Northern Irish'),
+            'norwegian' => __('general.Norwegian'),
+            'pakistani' => __('general.Pakistani'),
+            'palauan' => __('general.Palauan'),
+            'panamanian' => __('general.Panamanian'),
+            'papua_new_guinean' => __('general.Papua New Guinean'),
+            'paraguayan' => __('general.Paraguayan'),
+            'peruvian' => __('general.Peruvian'),
+            'polish' => __('general.Polish'),
+            'portuguese' => __('general.Portuguese'),
+            'romanian' => __('general.Romanian'),
+            'russian' => __('general.Russian'),
+            'rwandan' => __('general.Rwandan'),
+            'saint_lucian' => __('general.Saint Lucian'),
+            'salvadoran' => __('general.Salvadoran'),
+            'samoan' => __('general.Samoan'),
+            'san_marinese' => __('general.San Marinese'),
+            'sao_tomean' => __('general.Sao Tomean'),
+            'scottish' => __('general.Scottish'),
+            'senegalese' => __('general.Senegalese'),
+            'serbian' => __('general.Serbian'),
+            'seychellois' => __('general.Seychellois'),
+            'sierra_leonean' => __('general.Sierra Leonean'),
+            'singaporean' => __('general.Singaporean'),
+            'slovakian' => __('general.Slovakian'),
+            'slovenian' => __('general.Slovenian'),
+            'solomon_islander' => __('general.Solomon Islander'),
+            'somali' => __('general.Somali'),
+            'south_african' => __('general.South African'),
+            'south_korean' => __('general.South Korean'),
+            'spanish' => __('general.Spanish'),
+            'sri_lankan' => __('general.Sri Lankan'),
+            'surinamer' => __('general.Surinamer'),
+            'swazi' => __('general.Swazi'),
+            'swedish' => __('general.Swedish'),
+            'swiss' => __('general.Swiss'),
+            'taiwanese' => __('general.Taiwanese'),
+            'tajik' => __('general.Tajik'),
+            'tanzanian' => __('general.Tanzanian'),
+            'thai' => __('general.Thai'),
+            'togolese' => __('general.Togolese'),
+            'tongan' => __('general.Tongan'),
+            'trinidadian_or_tobagonian' => __('general.Trinidadian or Tobagonian'),
+            'turkish' => __('general.Turkish'),
+            'tuvaluan' => __('general.Tuvaluan'),
+            'ugandan' => __('general.Ugandan'),
+            'ukrainian' => __('general.Ukrainian'),
+            'uruguayan' => __('general.Uruguayan'),
+            'uzbekistani' => __('general.Uzbekistani'),
+            'venezuelan' => __('general.Venezuelan'),
+            'vietnamese' => __('general.Vietnamese'),
+            'welsh' => __('general.Welsh'),
+            'zambian' => __('general.Zambian'),
+            'zimbabwean' => __('general.Zimbabwean'),
+        ];
+    }
+
+    /**
+     * Get only Arab nationalities
+     * 
+     * @return array
+     */
+    public static function getArabNationalities(): array
+    {
+        return [
+            'jordanian' => __('general.Jordanian'),
+            'saudi' => __('general.Saudi'),
+            'egyptian' => __('general.Egyptian'),
+            'lebanese' => __('general.Lebanese'),
+            'syrian' => __('general.Syrian'),
+            'iraqi' => __('general.Iraqi'),
+            'emirian' => __('general.Emirian'),
+            'qatari' => __('general.Qatari'),
+            'kuwaiti' => __('general.Kuwaiti'),
+            'bahraini' => __('general.Bahraini'),
+            'omani' => __('general.Omani'),
+            'yemenite' => __('general.Yemenite'),
+            'moroccan' => __('general.Moroccan'),
+            'algerian' => __('general.Algerian'),
+            'tunisian' => __('general.Tunisian'),
+            'libyan' => __('general.Libyan'),
+            'sudanese' => __('general.Sudanese'),
+        ];
+    }
+
+    /**
+     * Get GCC nationalities only
+     * 
+     * @return array
+     */
+    public static function getGccNationalities(): array
+    {
+        return [
+            'jordanian' => __('general.Jordanian'),
+            'saudi' => __('general.Saudi'),
+            'emirian' => __('general.Emirian'),
+            'qatari' => __('general.Qatari'),
+            'kuwaiti' => __('general.Kuwaiti'),
+            'bahraini' => __('general.Bahraini'),
+            'omani' => __('general.Omani'),
+        ];
+    }
+
+    /**
+     * Get the default nationality
+     * 
+     * @return string
+     */
+    public static function getDefaultNationality(): string
+    {
+        return 'jordanian';
+    }
+}

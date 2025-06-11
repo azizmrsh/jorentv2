@@ -6,40 +6,63 @@ use Filament\Forms\Components\FileUpload;
 
 trait FileUploadTrait
 {    /**
-     * إنشاء حقل رفع صورة شخصية
-     */    public static function profilePhotoUpload(): FileUpload
+     * إنشاء حقل رفع صورة شخصية محسن للسرعة
+     */
+    public static function profilePhotoUpload(): FileUpload
     {
         return FileUpload::make('profile_photo')
-            ->label('Profile Photo')
+            ->label(__('general.Profile Photo'))
             ->image()
             ->directory('users')
             ->disk('uploads')
             ->visibility('public')
-            ->maxSize(5120) // 5MB
-            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+            ->maxSize(1024) // 1MB للسرعة القصوى
+            ->acceptedFileTypes(['image/jpeg', 'image/webp']) // أسرع الصيغ
             ->imageResizeMode('cover')
             ->imageCropAspectRatio('1:1')
-            ->imageResizeTargetWidth('300')
-            ->imageResizeTargetHeight('300')
-            ->helperText('Upload a profile photo (max 5MB, 300x300px recommended)');
+            ->imageResizeTargetWidth('120') // تصغير أكثر للسرعة
+            ->imageResizeTargetHeight('120')
+            ->imageEditor(false) // تعطيل المحرر لسرعة أكبر
+            ->previewable(false) // تعطيل المعاينة للأداء
+            ->openable(false) // تعطيل الفتح لتقليل العمليات
+            ->downloadable(false) // تعطيل التحميل لتوفير الموارد
+            ->moveFiles()
+            ->loadingIndicatorPosition('center')
+            ->uploadingMessage(__('general.Fast uploading...'))
+            ->helperText(__('general.Upload profile photo (max 1MB, auto-optimized for speed)'))
+            ->hintIcon('heroicon-o-bolt')
+            ->hint(__('general.Optimized for fast loading - WebP/JPEG only'));
     }
 
     /**
-     * إنشاء حقل رفع صورة وثيقة
-     */    public static function documentPhotoUpload(): FileUpload
+     * إنشاء حقل رفع صورة وثيقة محسن للسرعة
+     */
+    public static function documentPhotoUpload(): FileUpload
     {
         return FileUpload::make('document_photo')
-            ->label('Document Photo')
+            ->label(__('general.Document Photo'))
             ->image()
             ->directory('users/documents')
             ->disk('uploads')
             ->visibility('public')
-            ->maxSize(5120) // 5MB
-            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/pdf'])
-            ->helperText('Upload document photo or PDF (max 5MB)');
-    }/**
+            ->maxSize(1536) // تقليل أكثر إلى 1.5MB للسرعة
+            ->acceptedFileTypes(['image/jpeg', 'image/webp']) // أسرع الصيغ
+            ->imageResizeMode('contain')
+            ->imageResizeTargetWidth('300') // تصغير أكثر للسرعة
+            ->imageResizeTargetHeight('200')
+            ->previewable(false) // تعطيل للسرعة
+            ->openable(false) // تعطيل للسرعة
+            ->downloadable(false) // تعطيل للسرعة
+            ->moveFiles()
+            ->loadingIndicatorPosition('center')
+            ->uploadingMessage(__('general.Fast processing...'))
+            ->helperText(__('general.Upload document photo (max 1.5MB, optimized for speed)'))
+            ->hintIcon('heroicon-o-bolt')
+            ->hint(__('general.Fast loading - WebP/JPEG only'));
+    }    /**
      * إنشاء حقل رفع صورة عقار
-     */    public static function propertyImageUpload(): FileUpload
+     */
+    public static function propertyImageUpload(): FileUpload
     {
         return FileUpload::make('image_path')
             ->label('Property Image')
@@ -61,7 +84,8 @@ trait FileUploadTrait
 
     /**
      * إنشاء حقل رفع صور متعددة للوحدات
-     */    public static function unitImagesUpload(): FileUpload
+     */
+    public static function unitImagesUpload(): FileUpload
     {
         return FileUpload::make('images')
             ->label('Unit Images')
@@ -82,7 +106,8 @@ trait FileUploadTrait
 
     /**
      * إنشاء حقل رفع توقيع
-     */    public static function signatureUpload(string $fieldName, string $label): FileUpload
+     */
+    public static function signatureUpload(string $fieldName, string $label): FileUpload
     {
         return FileUpload::make($fieldName)
             ->label($label)
