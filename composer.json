@@ -13,13 +13,17 @@
         "alperenersoy/filament-export": "^3.0",
         "barryvdh/laravel-dompdf": "^3.1",
         "bezhansalleh/filament-language-switch": "^3.1",
+        "bezhansalleh/filament-shield": "*",
         "dompdf/dompdf": "^3.1",
         "filament/filament": "^3.3",
         "flowframe/laravel-trend": "*",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "mpdf/mpdf": "^8.2",
-        "saade/filament-autograph": "^3.2"
+        "propaganistas/laravel-phone": "^5.3",
+        "saade/filament-autograph": "^3.2",
+        "spatie/laravel-permission": "*",
+        "ysfkaya/filament-phone-input": "3.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

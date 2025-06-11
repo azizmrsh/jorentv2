@@ -6,6 +6,8 @@ use App\Filament\Resources\TenantResource\Pages;
 use App\Filament\Resources\TenantResource\RelationManagers;
 use App\Models\Tenant;
 use App\Traits\FileUploadTrait;
+use App\Traits\HasNationalityField;
+use App\Helpers\NationalityHelper;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -19,7 +21,7 @@ use Filament\Notifications\Notification;
 
 class TenantResource extends Resource
 {
-    use FileUploadTrait;
+    use FileUploadTrait, HasNationalityField;
     
     protected static ?string $model = Tenant::class;
 
@@ -61,9 +63,7 @@ class TenantResource extends Resource
                             ->maxLength(255),
                         Forms\Components\DatePicker::make('birth_date')
                             ->label(__('general.Birth Date')),
-                        Forms\Components\TextInput::make('nationality')
-                            ->label(__('general.Nationality'))
-                            ->maxLength(255),
+                        self::nationalityField(),
                     ]),
 
                 // Contact Information
@@ -202,11 +202,7 @@ class TenantResource extends Resource
                     ->sortable()
                     ->toggleable(),
                     
-                Tables\Columns\TextColumn::make('nationality')
-                    ->label(__('general.Nationality'))
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
+                self::nationalityColumn(),
                     
                 Tables\Columns\TextColumn::make('birth_date')
                     ->label(__('general.Birth Date'))
@@ -306,16 +302,7 @@ class TenantResource extends Resource
                         'other' => __('general.Other'),
                     ]),
                     
-                Tables\Filters\Filter::make('nationality')
-                    ->label(__('general.Nationality'))
-                    ->form([
-                        Forms\Components\TextInput::make('nationality')
-                            ->label(__('general.Nationality')),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->when($data['nationality'], fn ($query, $nationality) => 
-                            $query->where('nationality', 'like', "%{$nationality}%"));
-                    }),
+                self::nationalityFilter(),
                     
                 Tables\Filters\Filter::make('birth_date_range')
                     ->label(__('general.Birth Date Range'))

@@ -1,0 +1,111 @@
+/* تحسينات الأداء للصور - Image Performance Optimizations */
+
+/* تحسين عام للصور */
+img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+/* تحسين الصور الدائرية */
+.circular-image {
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* تحسين صور الوثائق */
+.document-image {
+    object-fit: contain;
+    object-position: center;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* تحسين التحميل التدريجي */
+.lazy-image {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.lazy-image.loaded {
+    opacity: 1;
+}
+
+/* تحسين الصور المصغرة */
+.thumbnail {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+/* تحسين التحويمات */
+.hover-scale {
+    transition: transform 0.2s ease-out;
+}
+
+.hover-scale:hover {
+    transform: scale(1.05) translateZ(0);
+}
+
+/* تحسين الصور الافتراضية */
+.default-avatar, .default-document {
+    background-color: #f9fafb;
+    background-image: linear-gradient(45deg, #f3f4f6 25%, transparent 25%), 
+                      linear-gradient(-45deg, #f3f4f6 25%, transparent 25%), 
+                      linear-gradient(45deg, transparent 75%, #f3f4f6 75%), 
+                      linear-gradient(-45deg, transparent 75%, #f3f4f6 75%);
+    background-size: 8px 8px;
+    background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+}
+
+/* تحسين الأداء للعناصر المتعددة */
+.image-grid {
+    contain: layout style paint;
+}
+
+/* تحسين الذاكرة */
+@media (max-width: 768px) {
+    img {
+        max-width: 100%;
+        height: auto;
+        image-rendering: -webkit-optimize-contrast;
+    }
+}
+
+/* تحسين للشاشات عالية الكثافة */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .thumbnail {
+        image-rendering: -webkit-optimize-contrast;
+    }
+}
+
+/* Loading placeholder animation */
+.image-loading {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* تحسين للطباعة */
+@media print {
+    img {
+        image-rendering: -webkit-optimize-contrast;
+        max-width: 100% !important;
+        height: auto !important;
+    }
+}
