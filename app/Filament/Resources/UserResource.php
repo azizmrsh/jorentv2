@@ -16,6 +16,10 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
 use Filament\Notifications\Notification;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
+use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
@@ -47,66 +51,218 @@ class UserResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form 
-            ->schema([
-                Forms\Components\TextInput::make('name')->required()->label(__('general.First Name'))->maxLength(255),
-                Forms\Components\TextInput::make('midname')->required()->label(__('general.Middle Name'))->maxLength(255),
-                Forms\Components\TextInput::make('lastname')->required()->label(__('general.Last Name'))->maxLength(255),
-                Forms\Components\TextInput::make('role')->required()->label(__('general.Role'))->maxLength(255)->default('user'),
-                Forms\Components\TextInput::make('status')->required()->label(__('general.Status'))->maxLength(255)->default('active'),
-                Forms\Components\TextInput::make('email')->required()->label(__('general.Email'))->email()->maxLength(255),
-                Forms\Components\TextInput::make('phone')->label(__('general.Phone'))->tel()->maxLength(255),
-                Forms\Components\TextInput::make('address')->required()->label(__('general.Address'))->maxLength(255),
-                Forms\Components\DatePicker::make('birth_date')->label(__('general.Birth Date')),
-                self::profilePhotoUpload(),
-                Forms\Components\TextInput::make('password')
-                    ->required()
-                    ->label(__('general.Password'))
-                    ->password()
-                    ->minLength(8)
-                    ->maxLength(255)
-                    ->dehydrateStateUsing(fn ($state) => bcrypt($state))
-                    ->confirmed()
-                    ->dehydrated(fn ($state) => ! blank($state)),
-                Forms\Components\TextInput::make('password_confirmation')
-                    ->required()
-                    ->label(__('general.Confirm Password'))
-                    ->password()
-                    ->minLength(8)
-                    ->maxLength(255)
-                    ->dehydrated(fn ($state) => ! blank($state)),
-            ]);
+        return $form->schema([
+            Forms\Components\Fieldset::make(__('general.Personal Information'))
+                ->schema([
+                    Forms\Components\Grid::make(3)
+                        ->schema([
+                            Forms\Components\TextInput::make('name')
+                                ->label(__('general.First Name'))
+                                ->required()
+                                ->maxLength(255)
+                                ->placeholder(__('general.Enter first name'))
+                                ->columnSpan(1),
+                            
+                            Forms\Components\TextInput::make('midname')
+                                ->label(__('general.Middle Name'))
+                                ->maxLength(255)
+                                ->placeholder(__('general.Enter middle name (optional)'))
+                                ->columnSpan(1),
+                            
+                            Forms\Components\TextInput::make('lastname')
+                                ->label(__('general.Last Name'))
+                                ->required()
+                                ->maxLength(255)
+                                ->placeholder(__('general.Enter last name'))
+                                ->columnSpan(1),
+                        ]),
+                    
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\DatePicker::make('birth_date')
+                                ->label(__('general.Birth Date'))
+                                ->required()
+                                ->maxDate(now()->subYears(18))
+                                ->before(now()->subYears(18))
+                                ->live()
+                                ->afterStateUpdated(function ($state, $component) {
+                                    if ($state && \Carbon\Carbon::parse($state)->age < 18) {
+                                        $component->state(null);
+                                    }
+                                })
+                                ->validationMessages([
+                                    'before' => __('general.Age must be at least 18 years'),
+                                    'max_date' => __('general.Age must be at least 18 years'),
+                                ])
+                                ->helperText(__('general.You must be at least 18 years old'))
+                                ->placeholder(__('general.Select birth date'))
+                                ->columnSpan(1),
+                            
+                            Forms\Components\Select::make('role')
+                                ->label(__('general.Role'))
+                                ->required()
+                                ->options([
+                                    'admin' => __('general.Admin'),
+                                    'manager' => __('general.Manager'),
+                                    'user' => __('general.User'),
+                                    'owner' => __('general.Owner'),
+                                ])
+                                ->default('user')
+                                ->native(false)
+                                ->placeholder(__('general.Select role'))
+                                ->columnSpan(1),
+                        ]),
+                ])
+                ->columns(3),
+
+            Forms\Components\Fieldset::make(__('general.Contact Information'))
+                ->schema([
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\TextInput::make('email')
+                                ->label(__('general.Email'))
+                                ->email()
+                                ->maxLength(255)
+                                ->required()
+                                ->unique(table: 'users', column: 'email', ignoreRecord: true)
+                                ->placeholder(__('general.Enter email address'))
+                                ->validationMessages([
+                                    'unique' => __('general.This email address is already in use. Please choose another one'),
+                                    'email' => __('general.Please enter a valid email address'),
+                                    'required' => __('general.The email field is required'),
+                                ])
+                                ->columnSpan(1),
+
+                            PhoneInput::make('phone')
+                                ->label(__('general.Phone'))
+                                ->required()
+                                ->defaultCountry('JO')
+                                ->onlyCountries(['JO', 'SA', 'AE', 'EG', 'LB', 'SY', 'IQ', 'KW', 'QA', 'BH', 'OM'])
+                                ->separateDialCode()
+                                ->validateFor()
+                                ->displayNumberFormat(PhoneInputNumberType::NATIONAL)
+                                ->inputNumberFormat(PhoneInputNumberType::E164)
+                                ->placeholder(__('general.Enter phone number'))
+                                ->columnSpan(1),
+                        ]),
+                    
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\TextInput::make('password')
+                                ->label(__('general.Password'))
+                                ->password()
+                                ->maxLength(255)
+                                ->required(fn (string $context): bool => $context === 'create')
+                                ->dehydrated(fn ($state) => filled($state))
+                                ->visible(fn (string $context) => in_array($context, ['create', 'edit']))
+                                ->placeholder(__('general.Enter password'))
+                                ->helperText(fn (string $context): string => $context === 'edit' ? __('general.Leave empty to keep current password') : '')
+                                ->columnSpan(1),
+                            
+                            Forms\Components\TextInput::make('confirm_password')
+                                ->label(__('general.Confirm Password'))
+                                ->password()
+                                ->maxLength(255)
+                                ->required(fn (string $context): bool => $context === 'create')
+                                ->dehydrated(fn ($state) => filled($state))
+                                ->visible(fn (string $context) => in_array($context, ['create', 'edit']))
+                                ->same('password')
+                                ->requiredWith('password')
+                                ->placeholder(__('general.Confirm password'))
+                                ->helperText(fn (string $context): string => $context === 'edit' ? __('general.Leave empty to keep current password') : '')
+                                ->columnSpan(1),
+                        ]),
+                    
+                    Forms\Components\TextInput::make('address')
+                        ->label(__('general.Address'))
+                        ->placeholder(__('general.Enter full address'))
+                        ->maxLength(255)
+                        ->required()
+                        ->columnSpan(2),
+                ])
+                ->columns(2),
+
+            Forms\Components\Fieldset::make(__('general.Profile Information'))
+                ->schema([
+                    Forms\Components\Grid::make(1)
+                        ->schema([
+                            self::profilePhotoUpload()
+                                ->columnSpan(1),
+                            
+                            Forms\Components\Select::make('status')
+                                ->label(__('general.Status'))
+                                ->required()
+                                ->options([
+                                    'active' => __('general.Active'),
+                                    'inactive' => __('general.Inactive'),
+                                    'suspended' => __('general.Suspended'),
+                                    'pending' => __('general.Pending'),
+                                ])
+                                ->default('active')
+                                ->native(false)
+                                ->placeholder(__('general.Select status'))
+                                ->columnSpan(1),
+                        ]),
+                ])
+                ->columns(1),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label(__('general.ID'))
+                // الاسم الكامل مع تنسيق محسن
+                Tables\Columns\TextColumn::make('full_name')
+                    ->label(__('general.Full Name'))
+                    ->getStateUsing(fn ($record) => trim($record->name . ' ' . $record->midname . ' ' . $record->lastname))
+                    ->searchable(['name', 'midname', 'lastname'])
                     ->sortable()
+                    ->weight('bold')
+                    ->color('primary')
+                    ->icon('heroicon-o-user')
+                    ->copyable()
+                    ->tooltip(fn ($record) => __('general.Full Name') . ': ' . trim($record->name . ' ' . $record->midname . ' ' . $record->lastname)),
+
+                // البريد الإلكتروني مع أيقونة
+                Tables\Columns\TextColumn::make('email')
+                    ->label(__('general.Email'))
                     ->searchable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('name')
-                    ->label(__('general.First Name'))
                     ->sortable()
+                    ->icon('heroicon-o-envelope')
+                    ->color('gray')
+                    ->copyable()
+                    ->limit(30)
+                    ->tooltip(fn ($record) => $record->email),
+
+                // رقم الهاتف مع تنسيق محسن
+                Tables\Columns\TextColumn::make('phone')
+                    ->label(__('general.Phone'))
                     ->searchable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('midname')
-                    ->label(__('general.Middle Name'))
                     ->sortable()
-                    ->searchable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('lastname')
-                    ->label(__('general.Last Name'))
-                    ->sortable()
-                    ->searchable()
-                    ->toggleable(),
+                    ->icon('heroicon-o-phone')
+                    ->copyable()
+                    ->color('info')
+                    ->formatStateUsing(function ($state) {
+                        if (empty($state)) {
+                            return null;
+                        }
+                        // Format phone number for display
+                        try {
+                            $phoneUtil = \libphonenumber\PhoneNumberUtil::getInstance();
+                            $phoneNumber = $phoneUtil->parse($state, null);
+                            return $phoneUtil->format($phoneNumber, \libphonenumber\PhoneNumberFormat::INTERNATIONAL);
+                        } catch (\Exception $e) {
+                            // If parsing fails, return the original value
+                            return $state;
+                        }
+                    }),
+
+                // الدور مع ألوان وأيقونات
                 Tables\Columns\TextColumn::make('role')
                     ->label(__('general.Role'))
-                    ->sortable()
                     ->searchable()
-                    ->toggleable()
+                    ->sortable()
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'admin' => 'danger',
@@ -114,26 +270,51 @@ class UserResource extends Resource
                         'owner' => 'success',
                         'user' => 'primary',
                         default => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'admin' => 'heroicon-o-shield-check',
+                        'manager' => 'heroicon-o-user-group',
+                        'owner' => 'heroicon-o-building-office',
+                        'user' => 'heroicon-o-user',
+                        default => 'heroicon-o-question-mark-circle',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'admin' => __('general.Admin'),
+                        'manager' => __('general.Manager'),
+                        'owner' => __('general.Owner'),
+                        'user' => __('general.User'),
+                        default => $state,
                     }),
+
+                // الحالة مع ألوان وأيقونات
                 Tables\Columns\TextColumn::make('status')
                     ->label(__('general.Status'))
-                    ->sortable()
                     ->searchable()
-                    ->toggleable()
+                    ->sortable()
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'active' => 'success',
-                        'inactive' => 'danger',
+                        'inactive' => 'gray',
+                        'suspended' => 'danger',
+                        'pending' => 'warning',
                         default => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'active' => 'heroicon-o-check-circle',
+                        'inactive' => 'heroicon-o-x-circle',
+                        'suspended' => 'heroicon-o-exclamation-triangle',
+                        'pending' => 'heroicon-o-clock',
+                        default => 'heroicon-o-question-mark-circle',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'active' => __('general.Active'),
+                        'inactive' => __('general.Inactive'),
+                        'suspended' => __('general.Suspended'),
+                        'pending' => __('general.Pending'),
+                        default => $state,
                     }),
-                Tables\Columns\TextColumn::make('email')
-                    ->label(__('general.Email'))
-                    ->sortable()
-                    ->searchable()
-                    ->toggleable()
-                    ->copyable()
-                    ->copyMessage(__('general.Email copied!'))
-                    ->limit(50),
+
+                // التحقق من البريد الإلكتروني
                 Tables\Columns\IconColumn::make('email_verified_at')
                     ->label(__('general.Email Verified'))
                     ->boolean()
@@ -148,62 +329,87 @@ class UserResource extends Resource
                             ? __('general.Verified on') . ' ' . $record->email_verified_at->format('Y-m-d H:i')
                             : __('general.Email not verified');
                     }),
-                Tables\Columns\TextColumn::make('phone')
-                    ->label(__('general.Phone'))
-                    ->sortable()
-                    ->searchable()
-                    ->toggleable()
-                    ->copyable()
-                    ->copyMessage(__('general.Phone copied!'))
-                    ->placeholder(__('general.No phone')),
+
+                // العنوان مع تقصير النص
                 Tables\Columns\TextColumn::make('address')
                     ->label(__('general.Address'))
-                    ->sortable()
                     ->searchable()
-                    ->toggleable()
-                    ->limit(50)
-                    ->placeholder(__('general.No address')),
+                    ->sortable()
+                    ->icon('heroicon-o-map-pin')
+                    ->color('gray')
+                    ->limit(40)
+                    ->tooltip(fn ($record) => $record->address)
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                // تاريخ الميلاد
                 Tables\Columns\TextColumn::make('birth_date')
                     ->label(__('general.Birth Date'))
-                    ->date()
+                    ->searchable()
                     ->sortable()
-                    ->toggleable()
-                    ->placeholder(__('general.No birth date')),
+                    ->date('Y-m-d')
+                    ->icon('heroicon-o-calendar')
+                    ->color('gray')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                // الصورة الشخصية
                 Tables\Columns\ImageColumn::make('profile_photo')
                     ->label(__('general.Profile Photo'))
                     ->circular()
                     ->size(40)
                     ->toggleable()
                     ->defaultImageUrl('data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="#e5e7eb"><circle cx="50" cy="50" r="50"/><circle cx="50" cy="35" r="15" fill="#9ca3af"/><ellipse cx="50" cy="75" rx="20" ry="15" fill="#9ca3af"/></svg>')),
+
+                // تاريخ الإنشاء
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('general.Created'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
-                // 🔍 فلتر النص الموحد
-                Tables\Filters\Filter::make('search')
+                // فلترة بالاسم الكامل
+                Tables\Filters\Filter::make('full_name')
+                    ->label(__('general.Full Name'))
                     ->form([
-                        Forms\Components\TextInput::make('search')
-                            ->label(__('general.Search'))
-                            ->placeholder(__('general.Search by name, email, phone...'))
+                        Forms\Components\TextInput::make('name')
+                            ->label(__('general.Search by name'))
+                            ->placeholder(__('general.Enter first, middle, or last name'))
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
-                            $data['search'],
-                            fn (Builder $query, $search): Builder => $query->where(function (Builder $query) use ($search) {
-                                $query->where('name', 'like', '%' . $search . '%')
-                                    ->orWhere('midname', 'like', '%' . $search . '%')
-                                    ->orWhere('lastname', 'like', '%' . $search . '%')
-                                    ->orWhere('email', 'like', '%' . $search . '%')
-                                    ->orWhere('phone', 'like', '%' . $search . '%');
+                            $data['name'],
+                            fn (Builder $query, $name): Builder => $query->where(function ($query) use ($name) {
+                                $query->where('name', 'like', "%{$name}%")
+                                      ->orWhere('midname', 'like', "%{$name}%")
+                                      ->orWhere('lastname', 'like', "%{$name}%");
                             })
                         );
                     })
-                    ->label(__('general.Global Search')),
+                    ->indicateUsing(function (array $data): ?string {
+                        if (! $data['name']) {
+                            return null;
+                        }
+                        return __('general.Full Name') . ': ' . $data['name'];
+                    }),
 
-                // 👤 فلتر الأدوار
+                // فلترة بالبريد الإلكتروني
+                Tables\Filters\Filter::make('email')
+                    ->label(__('general.Email'))
+                    ->form([
+                        Forms\Components\TextInput::make('email')
+                            ->label(__('general.Email'))
+                            ->placeholder(__('general.Enter email address'))
+                            ->email()
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['email'],
+                            fn (Builder $query, $email): Builder => $query->where('email', 'like', "%{$email}%")
+                        );
+                    }),
+
+                // فلترة بالدور مع تحسينات
                 Tables\Filters\SelectFilter::make('role')
                     ->label(__('general.Role'))
                     ->options([
@@ -213,18 +419,21 @@ class UserResource extends Resource
                         'owner' => __('general.Owner'),
                     ])
                     ->multiple()
-                    ->placeholder(__('general.Select roles')),
+                    ->searchable(),
 
-                // ✅ فلتر الحالة
+                // فلترة بالحالة مع تحسينات
                 Tables\Filters\SelectFilter::make('status')
                     ->label(__('general.Status'))
                     ->options([
                         'active' => __('general.Active'),
                         'inactive' => __('general.Inactive'),
+                        'suspended' => __('general.Suspended'),
+                        'pending' => __('general.Pending'),
                     ])
-                    ->placeholder(__('general.Select status')),
+                    ->multiple()
+                    ->searchable(),
 
-                // 📧 فلتر التحقق من البريد الإلكتروني
+                // فلترة بالتحقق من البريد الإلكتروني
                 Tables\Filters\TernaryFilter::make('email_verified')
                     ->label(__('general.Email Verified'))
                     ->trueLabel(__('general.Verified'))
@@ -234,64 +443,109 @@ class UserResource extends Resource
                         false: fn (Builder $query) => $query->whereNull('email_verified_at'),
                     ),
 
-                // 📅 فلتر تاريخ الميلاد
-                Tables\Filters\Filter::make('birth_date_range')
+                // فلترة بتاريخ الميلاد
+                Tables\Filters\Filter::make('birth_date')
+                    ->label(__('general.Birth Date'))
                     ->form([
-                        Forms\Components\Grid::make(2)
-                            ->schema([
-                                Forms\Components\DatePicker::make('birth_from')
-                                    ->label(__('general.Birth Date From'))
-                                    ->placeholder(__('general.From date')),
-                                Forms\Components\DatePicker::make('birth_to')
-                                    ->label(__('general.Birth Date To'))
-                                    ->placeholder(__('general.To date')),
-                            ])
+                        Forms\Components\DatePicker::make('birth_from')
+                            ->label(__('general.From'))
+                            ->placeholder(__('general.Select start date')),
+                        Forms\Components\DatePicker::make('birth_until')
+                            ->label(__('general.To'))
+                            ->placeholder(__('general.Select end date')),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
                                 $data['birth_from'],
-                                fn (Builder $query, $date): Builder => $query->where('birth_date', '>=', $date)
+                                fn (Builder $query, $date): Builder => $query->whereDate('birth_date', '>=', $date),
                             )
                             ->when(
-                                $data['birth_to'],
-                                fn (Builder $query, $date): Builder => $query->where('birth_date', '<=', $date)
+                                $data['birth_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('birth_date', '<=', $date),
                             );
                     })
-                    ->label(__('general.Birth Date Range')),
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['birth_from'] ?? null) {
+                            $indicators['birth_from'] = __('general.Birth from') . ': ' . Carbon::parse($data['birth_from'])->toFormattedDateString();
+                        }
+                        if ($data['birth_until'] ?? null) {
+                            $indicators['birth_until'] = __('general.Birth until') . ': ' . Carbon::parse($data['birth_until'])->toFormattedDateString();
+                        }
+                        return $indicators;
+                    }),
 
-                // 📞 فلتر وجود الهاتف
-                Tables\Filters\TernaryFilter::make('has_phone')
-                    ->label(__('general.Has Phone'))
-                    ->trueLabel(__('general.With Phone'))
-                    ->falseLabel(__('general.Without Phone'))
-                    ->queries(
-                        true: fn (Builder $query) => $query->whereNotNull('phone')->where('phone', '!=', ''),
-                        false: fn (Builder $query) => $query->whereNull('phone')->orWhere('phone', '=', ''),
-                    ),
-
-                // 🖼️ فلتر وجود الصورة الشخصية
-                Tables\Filters\TernaryFilter::make('has_profile_photo')
+                // فلترة بوجود الصورة الشخصية
+                Tables\Filters\TernaryFilter::make('profile_photo')
                     ->label(__('general.Has Profile Photo'))
                     ->trueLabel(__('general.With Photo'))
                     ->falseLabel(__('general.Without Photo'))
                     ->queries(
                         true: fn (Builder $query) => $query->whereNotNull('profile_photo')->where('profile_photo', '!=', ''),
-                        false: fn (Builder $query) => $query->whereNull('profile_photo')->orWhere('profile_photo', '=', ''),
+                        false: fn (Builder $query) => $query->whereNull('profile_photo')->orWhere('profile_photo', ''),
                     ),
+
+                // فلترة بالعمر
+                Tables\Filters\Filter::make('age')
+                    ->label(__('general.Age'))
+                    ->form([
+                        Forms\Components\TextInput::make('min_age')
+                            ->label(__('general.Minimum Age'))
+                            ->numeric()
+                            ->placeholder('18'),
+                        Forms\Components\TextInput::make('max_age')
+                            ->label(__('general.Maximum Age'))
+                            ->numeric()
+                            ->placeholder('65'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['min_age'],
+                                fn (Builder $query, $age): Builder => $query->whereDate('birth_date', '<=', now()->subYears($age)),
+                            )
+                            ->when(
+                                $data['max_age'],
+                                fn (Builder $query, $age): Builder => $query->whereDate('birth_date', '>=', now()->subYears($age)),
+                            );
+                    }),
             ])
+            ->filtersFormColumns(2)
+            ->persistFiltersInSession()
+
             ->headerActions([
                 FilamentExportHeaderAction::make('export')
                     ->label(__('general.Export'))
-                    ->fileName('users-export')
+                    ->fileName('managers-export')
                     ->defaultFormat('xlsx')
-                    
                     ->defaultPageOrientation('landscape')
                     ->disablePreview(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()->label(__('general.View')),
                 Tables\Actions\EditAction::make()->label(__('general.Edit')),
+                
+                // تغيير الحالة
+                Tables\Actions\Action::make('toggle_status')
+                    ->label(fn ($record) => $record->status === 'active' ? __('general.Deactivate') : __('general.Activate'))
+                    ->icon(fn ($record) => $record->status === 'active' ? 'heroicon-o-pause-circle' : 'heroicon-o-play-circle')
+                    ->color(fn ($record) => $record->status === 'active' ? 'danger' : 'success')
+                    ->requiresConfirmation()
+                    ->modalHeading(fn ($record) => $record->status === 'active' ? __('general.Deactivate Manager') : __('general.Activate Manager'))
+                    ->modalDescription(fn ($record) => $record->status === 'active' 
+                        ? __('general.Are you sure you want to deactivate this manager?')
+                        : __('general.Are you sure you want to activate this manager?'))
+                    ->action(function ($record) {
+                        $record->update([
+                            'status' => $record->status === 'active' ? 'inactive' : 'active'
+                        ]);
+                    })
+                    ->successNotificationTitle(fn ($record) => $record->status === 'active' 
+                        ? __('general.Manager activated successfully')
+                        : __('general.Manager deactivated successfully')),
+
+                // إرسال رابط التحقق
                 Tables\Actions\Action::make('resend_verification')
                     ->label(__('general.Resend Verification'))
                     ->icon('heroicon-o-envelope')
@@ -309,6 +563,8 @@ class UserResource extends Resource
                     ->modalHeading(__('general.Resend Email Verification Link'))
                     ->modalDescription(__('general.Are you sure you want to resend the verification link?'))
                     ->modalSubmitActionLabel(__('general.Send')),
+
+                // تأكيد البريد يدوياً
                 Tables\Actions\Action::make('mark_verified')
                     ->label(__('general.Mark as Verified'))
                     ->icon('heroicon-o-check-circle')
@@ -326,63 +582,22 @@ class UserResource extends Resource
                     ->modalHeading(__('general.Manually Verify Email'))
                     ->modalDescription(__('general.Are you sure you want to manually verify the email?'))
                     ->modalSubmitActionLabel(__('general.Verify')),
+                
                 Tables\Actions\DeleteAction::make()->label(__('general.Delete')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()->label(__('general.Delete Selected')),
-                    Tables\Actions\BulkAction::make('resend_verification_bulk')
-                        ->label(__('general.Resend Verification to Selected'))
-                        ->icon('heroicon-o-envelope')
-                        ->color('warning')
-                        ->action(function ($records) {
-                            $unverifiedCount = 0;
-                            foreach ($records as $record) {
-                                if (is_null($record->email_verified_at)) {
-                                    $record->sendEmailVerificationNotification();
-                                    $unverifiedCount++;
-                                }
-                            }
-                            Notification::make()
-                                ->title(__('general.Verification Link Sent Successfully'))
-                                ->body(__('general.Email verification confirmed for tenants', ['count' => $unverifiedCount]))
-                                ->success()
-                                ->send();
-                        })
-                        ->requiresConfirmation()
-                        ->modalHeading(__('general.Resend Email Verification Link'))
-                        ->modalDescription(__('general.Are you sure you want to resend email verification to all selected unverified users?'))
-                        ->modalSubmitActionLabel(__('general.Send')),
-                    Tables\Actions\BulkAction::make('mark_verified_bulk')
-                        ->label(__('general.Mark Selected as Verified'))
-                        ->icon('heroicon-o-check-circle')
-                        ->color('success')
-                        ->action(function ($records) {
-                            $updatedCount = 0;
-                            foreach ($records as $record) {
-                                if (is_null($record->email_verified_at)) {
-                                    $record->update(['email_verified_at' => now()]);
-                                    $updatedCount++;
-                                }
-                            }
-                            Notification::make()
-                                ->title(__('general.Email Verified Successfully'))
-                                ->body(__('general.Email verification confirmed for tenants', ['count' => $updatedCount]))
-                                ->success()
-                                ->send();
-                        })
-                        ->requiresConfirmation()
-                        ->modalHeading(__('general.Manually Verify Email'))
-                        ->modalDescription(__('general.Are you sure you want to manually mark selected emails as verified?'))
-                        ->modalSubmitActionLabel(__('general.Verify All')),
                     FilamentExportBulkAction::make('export-selected')
                         ->label(__('general.Export Selected'))
-                        ->fileName('users-selected')
+                        ->fileName('managers-selected')
                         ->defaultFormat('pdf')
-                        
                         ->disablePreview(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->striped()
+            ->paginated([10, 25, 50, 100]);
     }
 
     public static function getRelations(): array

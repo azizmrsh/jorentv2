@@ -18,7 +18,6 @@ use Carbon\Carbon;
 use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
-use Ysfkaya\FilamentPhoneInput\Tables\PhoneColumn;
 use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
 
 
@@ -274,13 +273,27 @@ class AccResource extends Resource
                     ->tooltip(fn ($record) => $record->email),
 
                 // رقم الهاتف مع تنسيق محسن
-                PhoneColumn::make('phone')
+                Tables\Columns\TextColumn::make('phone')
                     ->label(__('general.Phone'))
                     ->searchable()
                     ->sortable()
                     ->icon('heroicon-o-phone')
                     ->copyable()
-                    ->color('info'),
+                    ->color('info')
+                    ->formatStateUsing(function ($state) {
+                        if (empty($state)) {
+                            return null;
+                        }
+                        // Format phone number for display
+                        try {
+                            $phoneUtil = \libphonenumber\PhoneNumberUtil::getInstance();
+                            $phoneNumber = $phoneUtil->parse($state, null);
+                            return $phoneUtil->format($phoneNumber, \libphonenumber\PhoneNumberFormat::INTERNATIONAL);
+                        } catch (\Exception $e) {
+                            // If parsing fails, return the original value
+                            return $state;
+                        }
+                    }),
 
                 // الحالة مع ألوان وأيقونات
                 Tables\Columns\TextColumn::make('status')
