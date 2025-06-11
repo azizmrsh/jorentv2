@@ -137,7 +137,6 @@ class UserResource extends Resource
                                 ->label(__('general.Phone'))
                                 ->required()
                                 ->defaultCountry('JO')
-                                ->onlyCountries(['JO', 'SA', 'AE', 'EG', 'LB', 'SY', 'IQ', 'KW', 'QA', 'BH', 'OM'])
                                 ->separateDialCode()
                                 ->validateFor()
                                 ->displayNumberFormat(PhoneInputNumberType::NATIONAL)
@@ -350,14 +349,6 @@ class UserResource extends Resource
                     ->icon('heroicon-o-calendar')
                     ->color('gray')
                     ->toggleable(isToggledHiddenByDefault: true),
-
-                // الصورة الشخصية
-                Tables\Columns\ImageColumn::make('profile_photo')
-                    ->label(__('general.Profile Photo'))
-                    ->circular()
-                    ->size(40)
-                    ->toggleable()
-                    ->defaultImageUrl('data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="#e5e7eb"><circle cx="50" cy="50" r="50"/><circle cx="50" cy="35" r="15" fill="#9ca3af"/><ellipse cx="50" cy="75" rx="20" ry="15" fill="#9ca3af"/></svg>')),
 
                 // تاريخ الإنشاء
                 Tables\Columns\TextColumn::make('created_at')
