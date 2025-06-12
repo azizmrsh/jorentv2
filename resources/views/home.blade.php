@@ -315,29 +315,16 @@
         display: flex;
         align-items: center;
         gap: 1rem;
+        margin-bottom: 1rem;
     }
     
+    /* إزالة التنسيقات القديمة للأيقونة */
     .logo-icon {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        color: white;
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+        display: none; /* إخفاء الأيقونة القديمة */
     }
     
     .brand-name {
-        font-size: 2rem;
-        font-weight: 800;
-        margin: 0;
-        background: linear-gradient(135deg, #ffffff, #e2e8f0);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        display: none; /* إخفاء النص القديم */
     }
     
     .brand-description {
@@ -948,6 +935,59 @@
             padding: 3rem 0 !important;
         }
     }
+    
+    /* تحسينات إضافية للشعار في الفوتر */
+    .footer-enhanced .jorent-logo-container {
+        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+    }
+    
+    .footer-enhanced .jorent-logo-container:hover {
+        transform: translateY(-3px) scale(1.02);
+    }
+    
+    .footer-enhanced .jorent-logo {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .footer-enhanced .jorent-logo:hover {
+        filter: brightness(1.2) saturate(1.1);
+    }
+    
+    /* تحسين الألوان للوضع المظلم */
+    @media (prefers-color-scheme: dark) {
+        .footer-enhanced .jorent-logo-container {
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+        }
+    }
+    
+    /* تحسينات الاستجابة للشعار */
+    @media (max-width: 768px) {
+        .footer-logo .jorent-logo {
+            height: 2.5rem !important;
+        }
+        
+        .footer-logo .logo-title {
+            font-size: 1.5rem !important;
+        }
+        
+        .footer-logo .logo-subtitle {
+            font-size: 0.8rem !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .footer-logo .jorent-logo {
+            height: 2rem !important;
+        }
+        
+        .footer-logo .logo-title {
+            font-size: 1.25rem !important;
+        }
+        
+        .footer-logo .logo-subtitle {
+            font-size: 0.7rem !important;
+        }
+    }
 </style>
 @endsection
 
@@ -1477,10 +1517,7 @@
                 <div class="col-lg-4 col-md-6 mb-5 mb-lg-0">
                     <div class="footer-brand">
                         <div class="brand-logo mb-3">
-                            <div class="logo-icon">
-                                <i class="ri-home-4-fill"></i>
-                            </div>
-                            <h3 class="brand-name">Jorent</h3>
+                            <x-logo variant="footer" size="lg" :showText="true" />
                         </div>
                         <p class="brand-description">
                             Revolutionizing property management with cutting-edge technology. 

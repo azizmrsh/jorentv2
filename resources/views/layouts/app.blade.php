@@ -13,8 +13,8 @@
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Logo Styles -->
-    <link href="{{ asset('css/jorent-logo.css') }}" rel="stylesheet">
+    <!-- Logo Styles Enhanced -->
+    <link href="{{ asset('css/jorent-logo-enhanced.css') }}" rel="stylesheet">
     <!-- Iconify Icons -->
     <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
     <!-- Choices.js CSS -->
@@ -90,6 +90,23 @@
             font-size: 1.1rem;
         }
         
+        .navbar-brand {
+            transition: all 0.3s ease;
+            text-decoration: none !important;
+        }
+        
+        .navbar-brand:hover {
+            transform: translateY(-1px);
+        }
+        
+        .navbar-brand .jorent-logo-container {
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+        
+        .navbar-brand:hover .jorent-logo-container {
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+        }
+        
         @media (max-width: 991.98px) {
             .navbar-nav.mx-auto {
                 margin-top: 1rem;
@@ -106,9 +123,8 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/">
-                <x-logo variant="navbar" size="md" :showText="false" />
-                <span class="ms-2">JorentV2</span>
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <x-logo variant="navbar" size="md" :showText="true" />
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>

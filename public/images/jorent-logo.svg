@@ -1,54 +1,158 @@
-<!-- Jorent Logo - Optimized for Dark/Light Mode -->
+<!-- Jorent Logo - Optimized for Dark/Light Mode with Enhanced Responsiveness -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1022.73" class="jorent-logo">
   <defs>
     <style>
       /* CSS Variables for theme support */
       .jorent-logo {
-        --primary-color: #145593;
-        --secondary-color: #2563eb;
+        --primary-color: #2563eb;
+        --secondary-color: #3b82f6;
         --text-color: #1f2937;
         --accent-color: #f59e0b;
-        transition: all 0.3s ease;
+        --gradient-start: #2563eb;
+        --gradient-end: #0ea5e9;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       /* Dark mode support */
+      @media (prefers-color-scheme: dark) {
+        .jorent-logo {
+          --primary-color: #3b82f6;
+          --secondary-color: #60a5fa;
+          --text-color: #f3f4f6;
+          --accent-color: #fbbf24;
+          --gradient-start: #3b82f6;
+          --gradient-end: #06b6d4;
+        }
+      }
+
       .dark .jorent-logo {
         --primary-color: #3b82f6;
         --secondary-color: #60a5fa;
         --text-color: #f3f4f6;
         --accent-color: #fbbf24;
+        --gradient-start: #3b82f6;
+        --gradient-end: #06b6d4;
+      }
+
+      /* Navbar variant */
+      .navbar-logo .jorent-logo {
+        --primary-color: #ffffff;
+        --secondary-color: #f8fafc;
+        --text-color: #ffffff;
+        --accent-color: #fbbf24;
+        --gradient-start: #ffffff;
+        --gradient-end: #e2e8f0;
+      }
+
+      /* Footer variant */
+      .footer-logo .jorent-logo {
+        --primary-color: #ffffff;
+        --secondary-color: #f8fafc;
+        --text-color: #ffffff;
+        --accent-color: #fbbf24;
+        --gradient-start: #ffffff;
+        --gradient-end: #e2e8f0;
       }
 
       .logo-building {
         fill: var(--primary-color);
-        transition: fill 0.3s ease;
+        transition: fill 0.3s ease, transform 0.3s ease;
       }
 
       .logo-building:hover {
         fill: var(--secondary-color);
+        transform: translateY(-1px);
       }
 
       .logo-base {
-        fill: var(--primary-color);
+        fill: url(#buildingGradient);
         fill-rule: evenodd;
+        transition: all 0.3s ease;
       }
 
       .logo-text {
         fill: var(--text-color);
         stroke: none;
         font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-        font-weight: 600;
+        font-weight: 700;
+        transition: fill 0.3s ease;
       }
 
       .logo-text:hover {
         fill: var(--accent-color);
       }
 
+      .logo-accent {
+        fill: var(--accent-color);
+        transition: all 0.3s ease;
+      }
+
       /* Animation for logo */
       .jorent-logo:hover .logo-building {
-        transform: scale(1.02);
-        transform-origin: center;
+        transform: scale(1.02) translateY(-1px);
+        transform-origin: center bottom;
       }
+
+      .jorent-logo:hover .logo-accent {
+        filter: brightness(1.2);
+      }
+
+      /* Gradients */
+      #buildingGradient stop:first-child {
+        stop-color: var(--gradient-start);
+      }
+
+      #buildingGradient stop:last-child {
+        stop-color: var(--gradient-end);
+      }
+
+      #accentGradient stop:first-child {
+        stop-color: var(--accent-color);
+      }
+
+      #accentGradient stop:last-child {
+        stop-color: #ea580c;
+      }      /* Responsive optimizations */
+      @media (max-width: 768px) {
+        .jorent-logo {
+          max-height: 2rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .jorent-logo {
+          max-height: 1.75rem;
+        }
+      }
+
+      /* Enhanced hover effects */
+      .jorent-logo:hover {
+        filter: brightness(1.1) contrast(1.05);
+      }
+
+      /* Performance optimizations */
+      .jorent-logo * {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+      }
+    </style>
+    
+    <!-- Enhanced gradients for better visual appeal -->
+    <linearGradient id="buildingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="var(--gradient-start)" />
+      <stop offset="100%" stop-color="var(--gradient-end)" />
+    </linearGradient>
+    
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="var(--accent-color)" />
+      <stop offset="100%" stop-color="#ea580c" />
+    </linearGradient>
+
+    <!-- Shadow filters for depth -->
+    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.2)"/>
+    </filter>
+  </defs>
 
       /* Responsive sizing */
       .logo-sm { height: 32px; width: auto; }
