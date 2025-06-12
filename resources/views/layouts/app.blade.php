@@ -7,8 +7,14 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Property Grid') - JorentV2</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/jorent-logo.svg') }}">
+    
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Logo Styles -->
+    <link href="{{ asset('css/jorent-logo.css') }}" rel="stylesheet">
     <!-- Iconify Icons -->
     <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
     <!-- Choices.js CSS -->
@@ -101,8 +107,8 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="/">
-                <iconify-icon icon="solar:home-bold-duotone" class="me-2"></iconify-icon>
-                JorentV2
+                <x-logo variant="navbar" size="md" :showText="false" />
+                <span class="ms-2">JorentV2</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -158,9 +164,18 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-4 mt-5">
+    <footer class="bg-dark text-white py-5 mt-5">
         <div class="container">
-            <p class="mb-0">&copy; {{ date('Y') }} JorentV2. All rights reserved.</p>
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <x-logo variant="footer" size="lg" class="mb-3" />
+                    <p class="mb-0">&copy; {{ date('Y') }} JorentV2. Professional Real Estate Management.</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p class="mb-0">All rights reserved.</p>
+                    <small class="text-muted">Powered by Jorent System</small>
+                </div>
+            </div>
         </div>
     </footer>
 

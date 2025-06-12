@@ -1,4 +1,11 @@
 <x-filament-panels::page>
+    {{-- Profile Header with Logo --}}
+    <div class="mb-6 text-center">
+        <x-logo variant="profile" size="xl" class="mb-4" />
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">User Profile</h1>
+        <p class="text-gray-600 dark:text-gray-400">Manage your account settings and preferences</p>
+    </div>
+
     {{-- Profile Statistics Header --}}
     <div class="mb-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">

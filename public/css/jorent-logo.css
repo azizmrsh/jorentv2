@@ -1,0 +1,232 @@
+/* Jorent Logo Styles - احترافي وعصري */
+
+/* حاوي الشعار الأساسي */
+.jorent-logo-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+/* الشعار نفسه */
+.jorent-logo {
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    will-change: transform, filter;
+    backface-visibility: hidden;
+}
+
+/* أحجام الشعار المختلفة */
+.jorent-logo--sm {
+    height: 1.5rem;
+    width: auto;
+}
+
+.jorent-logo--md {
+    height: 2rem;
+    width: auto;
+}
+
+.jorent-logo--lg {
+    height: 2.5rem;
+    width: auto;
+}
+
+.jorent-logo--xl {
+    height: 3rem;
+    width: auto;
+}
+
+.jorent-logo--xxl {
+    height: 4rem;
+    width: auto;
+}
+
+/* تأثيرات التفاعل */
+.jorent-logo-container:hover .jorent-logo {
+    transform: scale(1.05);
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15)) brightness(1.1);
+}
+
+.jorent-logo-container:hover {
+    transform: translateY(-1px);
+}
+
+/* النص المصاحب للشعار */
+.logo-text-content {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.logo-text-content h1 {
+    font-family: 'Inter', 'system-ui', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: all 0.3s ease;
+}
+
+.logo-text-content p {
+    font-family: 'Inter', 'system-ui', sans-serif;
+    font-weight: 500;
+    font-size: 0.75rem;
+    margin: 0;
+    color: #6b7280;
+    transition: color 0.3s ease;
+}
+
+/* تخصيصات متقدمة للمتغيرات */
+
+/* شعار النافبار */
+.navbar-logo {
+    padding: 0.25rem 0;
+}
+
+.navbar-logo .jorent-logo {
+    height: 2rem;
+}
+
+/* شعار الفوتر */
+.footer-logo {
+    margin-bottom: 1rem;
+}
+
+.footer-logo .logo-text-content h1 {
+    font-size: 1.5rem;
+    color: white;
+    background: white;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.footer-logo .logo-text-content p {
+    color: #d1d5db;
+}
+
+/* شعار الأدمن */
+.admin-logo .jorent-logo {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.admin-logo:hover .jorent-logo {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15)) brightness(1.1) saturate(1.2);
+}
+
+/* شعار تسجيل الدخول */
+.login-logo {
+    margin-bottom: 2rem;
+    justify-content: center;
+    text-align: center;
+}
+
+.login-logo .logo-text-content h1 {
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.login-logo .jorent-logo {
+    height: 3.5rem;
+}
+
+/* شعار الملف الشخصي */
+.profile-logo {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.profile-logo .jorent-logo {
+    height: 1.5rem;
+}
+
+/* الوضع المظلم */
+.dark .logo-text-content h1 {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.dark .logo-text-content p {
+    color: #9ca3af;
+}
+
+@media (prefers-color-scheme: dark) {
+    .logo-text-content h1 {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .logo-text-content p {
+        color: #9ca3af;
+    }
+}
+
+/* تأثيرات خاصة للشاشات الكبيرة */
+@media (min-width: 1024px) {
+    .jorent-logo-container:hover {
+        transform: translateY(-2px);
+    }
+
+    .jorent-logo-container:hover .logo-text-content h1 {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b, #ea580c);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+}
+
+/* تحسينات للشاشات الصغيرة */
+@media (max-width: 640px) {
+    .navbar-logo .logo-text-content {
+        display: none;
+    }
+
+    .navbar-logo .jorent-logo {
+        height: 1.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-text-content h1 {
+        font-size: 1.125rem;
+    }
+
+    .logo-text-content p {
+        font-size: 0.625rem;
+    }
+}
+
+@media (min-width: 1280px) {
+    .logo-text-content h1 {
+        font-size: 1.5rem;
+    }
+}
+
+/* تأثيرات إضافية للحيوية */
+@keyframes logoGlow {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.3));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.6));
+    }
+}
+
+.jorent-logo-container:hover .jorent-logo {
+    animation: logoGlow 2s ease-in-out infinite;
+}
