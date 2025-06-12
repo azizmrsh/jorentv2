@@ -12,6 +12,7 @@ return [
         'show_model_path' => true,
         'is_scoped_to_tenant' => true,
         'cluster' => null,
+        'model' => \App\Filament\Resources\RoleResource::class,
     ],
 
     'tenant_model' => null,
@@ -28,7 +29,7 @@ return [
     ],
 
     'panel_user' => [
-        'enabled' => true,
+        'enabled' => false,
         'name' => 'panel_user',
     ],
 
@@ -46,10 +47,22 @@ return [
             'delete_any',
             'force_delete',
             'force_delete_any',
+            'export',
+            'import',
+            'bulk_action',
+            'bulk_action_any',
+            'custom',
         ],
 
         'page' => 'page',
         'widget' => 'widget',
+        'custom_permission' => 'custom_permission',
+        'entity' => 'entity',
+        'global' => 'global',
+        'shield' => 'shield',
+        'role' => 'role',
+        'permission' => 'permission',
+        
     ],
 
     'entities' => [

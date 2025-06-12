@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(\App\Http\Middleware\OptimizeDbConnections::class);
+        $middleware->alias([
+            'super.admin' => \App\Http\Middleware\SuperAdminOnly::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

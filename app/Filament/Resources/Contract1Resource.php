@@ -244,6 +244,7 @@ class Contract1Resource extends Resource
                     // توقيع المستأجر
                     SignaturePad::make('tenant_signature_path')
                         ->label(__('general.Tenant Signature'))
+                        ->exportPenColor('#1d4ed8') 
                         ->required()
                         ->dehydrateStateUsing(function ($state) {
                             if ($state) {
@@ -266,6 +267,7 @@ class Contract1Resource extends Resource
                     // توقيع المؤجر
                     SignaturePad::make('landlord_signature_path')
                         ->label(__('general.Landlord Signature'))
+                        ->exportPenColor('#1d4ed8') 
                         ->required()
                         ->dehydrateStateUsing(function ($state) {
                             if ($state) {
@@ -296,6 +298,7 @@ class Contract1Resource extends Resource
                     
                     SignaturePad::make('witness1_signature_path')
                         ->label(__('general.First Witness Signature'))
+                        ->exportPenColor('#1d4ed8') 
                         ->required()
                         ->dehydrateStateUsing(function ($state) {
                             if ($state) {
@@ -321,6 +324,7 @@ class Contract1Resource extends Resource
                     
                     SignaturePad::make('witness2_signature_path')
                         ->label(__('general.Second Witness Signature'))
+                        ->exportPenColor('#1d4ed8')
                         ->required()
                         ->dehydrateStateUsing(function ($state) {
                             if ($state) {

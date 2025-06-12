@@ -59,10 +59,9 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                 \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+            ])
+            ->plugins([
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
             ]);
-            // تم تعليق Plugin مؤقتاً لحل مشكلة array_merge()
-            // ->plugins([
-            //     TableLayoutTogglePlugin::make(),
-            // ]);
     }
 }
