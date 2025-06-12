@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Traits;
+namespace App\Traits; // force touch
 
 use Filament\Forms\Components\FileUpload;
 
 trait FileUploadTrait
-{    /**
-     * إنشاء حقل رفع صورة شخصية محسن للسرعة
+{
+    /**
+     * Create profile photo upload field
+     * Saves to public/uploads/users/
      */
     public static function profilePhotoUpload(): FileUpload
     {
@@ -16,96 +18,99 @@ trait FileUploadTrait
             ->directory('users')
             ->disk('uploads')
             ->visibility('public')
-            ->maxSize(1024) // 1MB للسرعة القصوى
-            ->acceptedFileTypes(['image/jpeg', 'image/webp']) // أسرع الصيغ
+            ->maxSize(2048)
+            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
             ->imageResizeMode('cover')
             ->imageCropAspectRatio('1:1')
-            ->imageResizeTargetWidth('120') // تصغير أكثر للسرعة
-            ->imageResizeTargetHeight('120')
-            ->imageEditor(false) // تعطيل المحرر لسرعة أكبر
-            ->previewable(false) // تعطيل المعاينة للأداء
-            ->openable(false) // تعطيل الفتح لتقليل العمليات
-            ->downloadable(false) // تعطيل التحميل لتوفير الموارد
+            ->imageResizeTargetWidth('300')
+            ->imageResizeTargetHeight('300')
+            ->previewable()
+            ->openable()
+            ->downloadable()
             ->moveFiles()
-            ->loadingIndicatorPosition('center')
-            ->uploadingMessage(__('general.Fast uploading...'))
-            ->helperText(__('general.Upload profile photo (max 1MB, auto-optimized for speed)'))
-            ->hintIcon('heroicon-o-bolt')
-            ->hint(__('general.Optimized for fast loading - WebP/JPEG only'));
+            ->helperText(__('general.Upload profile photo (max 2MB, 300x300px)'))
+            ->hintIcon('heroicon-o-user-circle');
     }
 
     /**
-     * إنشاء حقل رفع صورة وثيقة محسن للسرعة
+     * Create document photo upload field
+     * Saves to public/uploads/{model}/documents/
      */
     public static function documentPhotoUpload(): FileUpload
     {
         return FileUpload::make('document_photo')
             ->label(__('general.Document Photo'))
-            ->image()
             ->directory('users/documents')
             ->disk('uploads')
             ->visibility('public')
-            ->maxSize(1536) // تقليل أكثر إلى 1.5MB للسرعة
-            ->acceptedFileTypes(['image/jpeg', 'image/webp']) // أسرع الصيغ
+            ->maxSize(5120)
+            ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
             ->imageResizeMode('contain')
-            ->imageResizeTargetWidth('300') // تصغير أكثر للسرعة
-            ->imageResizeTargetHeight('200')
-            ->previewable(false) // تعطيل للسرعة
-            ->openable(false) // تعطيل للسرعة
-            ->downloadable(false) // تعطيل للسرعة
+            ->imageResizeTargetWidth('800')
+            ->imageResizeTargetHeight('600')
+            ->previewable()
+            ->openable()
+            ->downloadable()
             ->moveFiles()
-            ->loadingIndicatorPosition('center')
-            ->uploadingMessage(__('general.Fast processing...'))
-            ->helperText(__('general.Upload document photo (max 1.5MB, optimized for speed)'))
-            ->hintIcon('heroicon-o-bolt')
-            ->hint(__('general.Fast loading - WebP/JPEG only'));
-    }    /**
-     * إنشاء حقل رفع صورة عقار
+            ->helperText(__('general.Upload document photo or PDF (max 5MB)'))
+            ->hintIcon('heroicon-o-document');
+    }
+
+    /**
+     * Create property image upload field
+     * Saves to public/uploads/properties/
      */
     public static function propertyImageUpload(): FileUpload
     {
         return FileUpload::make('image_path')
-            ->label('Property Image')
+            ->label(__('general.Property Image'))
             ->image()
             ->directory('properties')
             ->disk('uploads')
             ->visibility('public')
-            ->imageEditor()
-            ->imageEditorAspectRatios([
-                '16:9',
-                '4:3',
-                '1:1',
-            ])
-            ->maxSize(10240) // 10MB للعقارات
+            ->maxSize(10240)
             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-            ->helperText('Upload a high-quality property image (max 10MB)')
+            ->imageEditor()
+            ->imageEditorAspectRatios(['16:9', '4:3', '1:1'])
+            ->imageResizeMode('cover')
+            ->imageResizeTargetWidth('1200')
+            ->imageResizeTargetHeight('800')
+            ->previewable()
+            ->openable()
+            ->downloadable()
+            ->helperText(__('general.Upload property image (max 10MB, high quality)'))
             ->columnSpanFull();
     }
 
     /**
-     * إنشاء حقل رفع صور متعددة للوحدات
+     * Create unit images upload field (multiple)
+     * Saves to public/uploads/units/
      */
     public static function unitImagesUpload(): FileUpload
     {
         return FileUpload::make('images')
-            ->label('Unit Images')
+            ->label(__('general.Unit Images'))
             ->image()
             ->multiple()
             ->directory('units')
             ->disk('uploads')
             ->visibility('public')
-            ->maxSize(5120) // 5MB لكل صورة
-            ->maxFiles(10) // حد أقصى 10 صور
+            ->maxSize(5120)
+            ->maxFiles(10)
             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
             ->imageResizeMode('cover')
             ->imageResizeTargetWidth('800')
             ->imageResizeTargetHeight('600')
-            ->helperText('Upload up to 10 unit images (max 5MB each, 800x600px recommended)')
+            ->previewable()
+            ->openable()
+            ->downloadable()
+            ->helperText(__('general.Upload up to 10 unit images (max 5MB each)'))
             ->columnSpanFull();
     }
 
     /**
-     * إنشاء حقل رفع توقيع
+     * Create signature upload field
+     * Saves to public/uploads/contracts/signatures/
      */
     public static function signatureUpload(string $fieldName, string $label): FileUpload
     {
@@ -115,43 +120,76 @@ trait FileUploadTrait
             ->directory('contracts/signatures')
             ->disk('uploads')
             ->visibility('public')
-            ->maxSize(2048) // 2MB للتواقيع
+            ->maxSize(2048)
             ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/svg+xml'])
             ->imageResizeMode('contain')
             ->imageResizeTargetWidth('400')
             ->imageResizeTargetHeight('200')
-            ->helperText('Upload signature image (max 2MB, PNG/JPEG/SVG, 400x200px recommended)');
+            ->previewable()
+            ->openable()
+            ->downloadable()
+            ->helperText(__('general.Upload signature (max 2MB, 400x200px)'));
     }
 
     /**
-     * إنشاء حقل رفع ملف PDF
-     */    public static function pdfUpload(string $fieldName, string $label, string $directory = 'documents'): FileUpload
+     * Create PDF upload field
+     * Saves to public/uploads/contracts/pdfs/
+     */
+    public static function pdfUpload(string $fieldName, string $label, string $directory = 'documents'): FileUpload
     {
         return FileUpload::make($fieldName)
             ->label($label)
             ->directory($directory)
             ->disk('uploads')
             ->visibility('public')
-            ->maxSize(20480) // 20MB للملفات            ->acceptedFileTypes(['application/pdf'])
-            ->helperText('Upload PDF file (max 20MB)');
+            ->maxSize(20480)
+            ->acceptedFileTypes(['application/pdf'])
+            ->previewable()
+            ->openable()
+            ->downloadable()
+            ->helperText(__('general.Upload PDF file (max 20MB)'));
     }
 
     /**
-     * إنشاء حقل رفع مرفق دفعة
+     * Create payment attachment upload field
+     * Saves to public/uploads/payments/receipts/
      */
     public static function paymentAttachmentUpload(): FileUpload
     {
-        return FileUpload::make('attachment')
-            ->label('Payment Attachment')
+        return FileUpload::make('receipt_attachment')
+            ->label(__('general.Payment Receipt'))
             ->directory('payments/receipts')
             ->disk('uploads')
             ->visibility('public')
-            ->maxSize(10240) // 10MB
+            ->maxSize(10240)
             ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
-            ->helperText('Upload payment receipt or proof (max 10MB, JPEG/PNG/PDF)');    }
+            ->previewable()
+            ->openable()
+            ->downloadable()
+            ->helperText(__('general.Upload payment receipt (max 10MB, JPEG/PNG/PDF)'));
+    }
 
     /**
-     * إنشاء حقل رفع ملف عام
+     * Create payment proof upload field
+     * Saves to public/uploads/payments/proofs/
+     */
+    public static function paymentProofUpload(): FileUpload
+    {
+        return FileUpload::make('payment_proof')
+            ->label(__('general.Payment Proof'))
+            ->directory('payments/proofs')
+            ->disk('uploads')
+            ->visibility('public')
+            ->maxSize(10240)
+            ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
+            ->previewable()
+            ->openable()
+            ->downloadable()
+            ->helperText(__('general.Upload payment proof (max 10MB, JPEG/PNG/PDF)'));
+    }
+
+    /**
+     * Create general file upload field
      */
     public static function generalFileUpload(
         string $fieldName, 
@@ -168,21 +206,26 @@ trait FileUploadTrait
             ->visibility('public')
             ->maxSize($maxSize)
             ->acceptedFileTypes($acceptedTypes)
+            ->previewable()
+            ->openable()
+            ->downloadable()
             ->helperText($helperText ?? "Upload file (max {$maxSize}KB)");
-    }    /**
-     * الحصول على تكوين أساسي لرفع الملفات
+    }
+
+    /**
+     * Get base file upload configuration
      */
     public static function baseFileUploadConfig(): array
     {
         return [
             'disk' => 'uploads',
             'visibility' => 'public',
-            'maxSize' => 5120, // 5MB افتراضي
+            'maxSize' => 5120,
         ];
     }
 
     /**
-     * الحصول على أنواع ملفات الصور المسموحة
+     * Get allowed image file types
      */
     public static function getImageFileTypes(): array
     {
@@ -190,24 +233,22 @@ trait FileUploadTrait
     }
 
     /**
-     * الحصول على أنواع ملفات الوثائق المسموحة
+     * Get allowed PDF file types
      */
-    public static function getDocumentFileTypes(): array
+    public static function getPdfFileTypes(): array
     {
-        return ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        return ['application/pdf'];
     }
 
     /**
-     * الحصول على تكوين محسن للصور
+     * Get allowed document file types
      */
-    public static function getOptimizedImageConfig(): array
+    public static function getDocumentFileTypes(): array
     {
         return [
-            'imageResizeMode' => 'cover',
-            'imageResizeTargetWidth' => '800',
-            'imageResizeTargetHeight' => '600',
-            'imageEditor' => true,
-            'imageEditorAspectRatios' => ['16:9', '4:3', '1:1'],
+            'application/pdf', 
+            'application/msword', 
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ];
     }
 }
